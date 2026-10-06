@@ -1,17 +1,28 @@
 package com.verbpulse.app.feature.setup.ui
 
-import android.content.res.Configuration
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -19,226 +30,247 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
 import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
-import androidx.wear.compose.material3.Button
-import androidx.wear.compose.material3.ButtonDefaults
-import androidx.wear.compose.material3.MaterialTheme
 import androidx.wear.compose.material3.Text
-import com.verbpulse.app.R
 import com.verbpulse.app.core.designsystem.OrangePrimary
 import com.verbpulse.app.core.designsystem.VerbPulseTheme
 
 @Composable
-fun HomeScreen(
-    onStartStudy: () -> Unit = {}
+fun HomeScreen() {
+    var selectedTheme by remember { mutableStateOf("Tecnología") }
+    var selectedWords by remember { mutableStateOf("10") }
+    var selectedFrequency by remember { mutableStateOf("1h") }
+    var isDarkMode by remember { mutableStateOf(true) }
+
+    HomeContent(
+        selectedTheme = selectedTheme,
+        onThemeChange = { selectedTheme = it },
+        selectedWords = selectedWords,
+        onWordsChange = { selectedWords = it },
+        selectedFrequency = selectedFrequency,
+        onFrequencyChange = { selectedFrequency = it },
+        isDarkMode = isDarkMode,
+        onToggleDarkMode = { isDarkMode = !isDarkMode }
+    )
+}
+
+@Composable
+fun TopHeader(isDarkMode: Boolean, onToggleDarkMode: () -> Unit) {
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        // ES chip
+        Box(
+            modifier = Modifier
+                .background(Color(0xFF2C2C2E), RoundedCornerShape(50.dp))
+                .padding(horizontal = 12.dp, vertical = 4.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("ES", color = Color(0xFFEBEBF5), fontSize = 11.sp, fontWeight = FontWeight.Medium)
+        }
+        Spacer(Modifier.width(8.dp))
+        // Sun/Moon chip
+        Box(
+            modifier = Modifier
+                .background(Color(0xFF2C2C2E), RoundedCornerShape(50.dp))
+                .padding(horizontal = 12.dp, vertical = 4.dp)
+                .clickable { onToggleDarkMode() },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(if (isDarkMode) "☀️" else "🌙", fontSize = 11.sp)
+        }
+    }
+}
+
+@Composable
+fun TitleSection() {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            "🔥 Racha de 5 días",
+            color = OrangePrimary,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Normal
+        )
+        Spacer(Modifier.height(4.dp))
+        Text(
+            "Tema de hoy",
+            color = Color.White,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+fun ThemeButton(
+    icon: String,
+    label: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
 ) {
-    val themes = listOf("Tecnología", "Negocios", "Vida Diaria")
-    val wordGoals = listOf(5, 10, 15)
-    val frequencies = listOf("1h", "2h", "3h")
+    val bgColor = if (isSelected) OrangePrimary else Color(0xFF2C2C2E)
+    val textColor = if (isSelected) Color.White else Color(0xFF8E8E93)
 
-    var selectedTheme by remember { mutableStateOf(0) }
-    var selectedGoal by remember { mutableStateOf(1) } // default 10
-    var selectedFrequency by remember { mutableStateOf(1) } // default 2h
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(48.dp)
+            .background(bgColor, RoundedCornerShape(50.dp))
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(icon, fontSize = 16.sp)
+            Spacer(Modifier.width(10.dp))
+            Text(
+                label,
+                color = textColor,
+                fontSize = 13.sp,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                modifier = Modifier.weight(1f)
+            )
+            if (isSelected) {
+                Text("✓", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+            }
+        }
+    }
+}
 
+@Composable
+fun SegmentedSelector(
+    label: String,
+    options: List<String>,
+    selected: String,
+    onSelect: (String) -> Unit
+) {
+    Column {
+        Text(
+            label,
+            color = Color(0xFF8E8E93),
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Normal,
+            letterSpacing = 0.5.sp
+        )
+        Spacer(Modifier.height(8.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(36.dp)
+                .background(Color(0xFF2C2C2E), RoundedCornerShape(50.dp))
+                .padding(horizontal = 4.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            options.forEach { option ->
+                val isActive = option == selected
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .background(
+                            if (isActive) Color.White else Color.Transparent,
+                            RoundedCornerShape(50.dp)
+                        )
+                        .clickable { onSelect(option) },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        option,
+                        color = if (isActive) Color.Black else Color(0xFF8E8E93),
+                        fontSize = 13.sp,
+                        fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun HomeContent(
+    selectedTheme: String,
+    onThemeChange: (String) -> Unit,
+    selectedWords: String,
+    onWordsChange: (String) -> Unit,
+    selectedFrequency: String,
+    onFrequencyChange: (String) -> Unit,
+    isDarkMode: Boolean,
+    onToggleDarkMode: () -> Unit
+) {
     val listState = rememberScalingLazyListState()
+    val themes = listOf(
+        Triple("⚙️", "Tecnología", "Tecnología"),
+        Triple("💼", "Negocios", "Negocios"),
+        Triple("☕", "Vida Diaria", "Vida Diaria")
+    )
 
-    ScalingLazyColumn(
-        state = listState,
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+            .background(Color(0xFF000000))
     ) {
-        // Streak header
-        item {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = stringResource(R.string.home_streak),
-                    color = OrangePrimary,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center
+        ScalingLazyColumn(
+            state = listState,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp)
+        ) {
+            item { TopHeader(isDarkMode = isDarkMode, onToggleDarkMode = onToggleDarkMode) }
+            item { Spacer(Modifier.height(12.dp)) }
+            item { TitleSection() }
+            item { Spacer(Modifier.height(16.dp)) }
+
+            items(themes.size) { idx ->
+                val (icon, label, key) = themes[idx]
+                ThemeButton(
+                    icon = icon,
+                    label = label,
+                    isSelected = selectedTheme == key,
+                    onClick = { onThemeChange(key) }
                 )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = stringResource(R.string.home_topic_label),
-                    color = MaterialTheme.colorScheme.onSurface,
-                    style = MaterialTheme.typography.titleSmall,
-                    textAlign = TextAlign.Center
+                if (idx < themes.size - 1) Spacer(Modifier.height(8.dp))
+            }
+
+            item { Spacer(Modifier.height(20.dp)) }
+            item {
+                SegmentedSelector(
+                    label = "META DIARIA · PALABRAS",
+                    options = listOf("5", "10", "15"),
+                    selected = selectedWords,
+                    onSelect = onWordsChange
                 )
             }
-        }
 
-        // Theme chips
-        item {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                themes.forEachIndexed { index, label ->
-                    val isSelected = selectedTheme == index
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(32.dp)
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(
-                                if (isSelected) OrangePrimary
-                                else MaterialTheme.colorScheme.secondaryContainer
-                            )
-                            .border(
-                                width = if (isSelected) 0.dp else 1.dp,
-                                color = if (isSelected) Color.Transparent
-                                else MaterialTheme.colorScheme.outline,
-                                shape = RoundedCornerShape(16.dp)
-                            )
-                            .clickable { selectedTheme = index },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = label,
-                            fontSize = 9.sp,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isSelected) Color.White
-                            else MaterialTheme.colorScheme.onSurface,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                }
-            }
-        }
-
-        // Daily goal section
-        item {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = stringResource(R.string.home_daily_goal_label),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 9.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    letterSpacing = 0.5.sp,
-                    textAlign = TextAlign.Center
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    wordGoals.forEachIndexed { index, goal ->
-                        val isSelected = selectedGoal == index
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(32.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(
-                                    if (isSelected) OrangePrimary
-                                    else MaterialTheme.colorScheme.secondaryContainer
-                                )
-                                .clickable { selectedGoal = index },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = goal.toString(),
-                                fontSize = 12.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                color = if (isSelected) Color.White
-                                else MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        // Frequency section
-        item {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = stringResource(R.string.home_frequency_label),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 9.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    letterSpacing = 0.5.sp,
-                    textAlign = TextAlign.Center
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    frequencies.forEachIndexed { index, freq ->
-                        val isSelected = selectedFrequency == index
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(32.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(
-                                    if (isSelected) OrangePrimary
-                                    else MaterialTheme.colorScheme.secondaryContainer
-                                )
-                                .clickable { selectedFrequency = index },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = freq,
-                                fontSize = 12.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                color = if (isSelected) Color.White
-                                else MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        // Action button
-        item {
-            Spacer(modifier = Modifier.height(4.dp))
-            Button(
-                onClick = onStartStudy,
-                modifier = Modifier
-                    .fillMaxWidth(0.75f)
-                    .height(48.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = OrangePrimary,
-                    contentColor = Color.White
-                )
-            ) {
-                Text(
-                    text = stringResource(R.string.home_start_button),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold
+            item { Spacer(Modifier.height(20.dp)) }
+            item {
+                SegmentedSelector(
+                    label = "FRECUENCIA · CADA",
+                    options = listOf("1h", "2h", "3h"),
+                    selected = selectedFrequency,
+                    onSelect = onFrequencyChange
                 )
             }
         }
     }
 }
 
-@Preview(name = "Round - Dark", widthDp = 227, heightDp = 227, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(name = "Round Dark", widthDp = 227, heightDp = 227)
 @Composable
-fun HomeScreenPreviewRoundDark() {
-    VerbPulseTheme(darkTheme = true) {
-        HomeScreen()
-    }
+fun HomeScreenPreviewRound() {
+    VerbPulseTheme(darkTheme = true) { HomeScreen() }
 }
 
-@Preview(name = "Square - Dark", widthDp = 220, heightDp = 220, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(name = "Square Dark", widthDp = 220, heightDp = 220)
 @Composable
-fun HomeScreenPreviewSquareDark() {
-    VerbPulseTheme(darkTheme = true) {
-        HomeScreen()
-    }
+fun HomeScreenPreviewSquare() {
+    VerbPulseTheme(darkTheme = true) { HomeScreen() }
 }
