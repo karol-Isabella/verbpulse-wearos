@@ -27,6 +27,8 @@ ui = { group = "androidx.compose.ui", name = "ui" }
 ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+compose-material = { group = "androidx.compose.material", name = "material" }
+material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 
 wear-compose-foundation = { group = "androidx.wear.compose", name = "compose-foundation", version.ref = "composeWear" }
 wear-compose-material3 = { group = "androidx.wear.compose", name = "compose-material3", version.ref = "composeMaterial3Wear" }

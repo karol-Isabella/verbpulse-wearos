@@ -13,8 +13,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Brightness4
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.FreeBreakfast
+import androidx.compose.material.icons.rounded.LocalFireDepartment
+import androidx.compose.material.icons.rounded.Memory
+import androidx.compose.material.icons.rounded.WbSunny
+import androidx.compose.material.icons.rounded.Work
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -78,7 +89,12 @@ fun TopHeader(isDarkMode: Boolean, onToggleDarkMode: () -> Unit) {
                 .clickable { onToggleDarkMode() },
             contentAlignment = Alignment.Center
         ) {
-            Text(if (isDarkMode) "☀️" else "🌙", fontSize = 11.sp)
+            Icon(
+                imageVector = if (isDarkMode) Icons.Rounded.WbSunny else Icons.Rounded.Brightness4,
+                contentDescription = if (isDarkMode) "Switch to light mode" else "Switch to dark mode",
+                tint = Color(0xFFEBEBF5),
+                modifier = Modifier.size(16.dp)
+            )
         }
     }
 }
@@ -86,12 +102,21 @@ fun TopHeader(isDarkMode: Boolean, onToggleDarkMode: () -> Unit) {
 @Composable
 fun TitleSection() {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            "🔥 Racha de 5 días",
-            color = OrangePrimary,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Normal
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = Icons.Rounded.LocalFireDepartment,
+                contentDescription = null,
+                tint = OrangePrimary,
+                modifier = Modifier.size(14.dp)
+            )
+            Spacer(Modifier.width(4.dp))
+            Text(
+                "Racha de 5 días",
+                color = OrangePrimary,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Normal
+            )
+        }
         Spacer(Modifier.height(4.dp))
         Text(
             "Tema de hoy",
@@ -104,7 +129,7 @@ fun TitleSection() {
 
 @Composable
 fun ThemeButton(
-    icon: String,
+    icon: ImageVector,
     label: String,
     isSelected: Boolean,
     onClick: () -> Unit
@@ -126,7 +151,12 @@ fun ThemeButton(
                 .padding(horizontal = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(icon, fontSize = 16.sp)
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = if (isSelected) Color.White else Color(0xFF8E8E93),
+                modifier = Modifier.size(20.dp)
+            )
             Spacer(Modifier.width(10.dp))
             Text(
                 label,
@@ -136,7 +166,12 @@ fun ThemeButton(
                 modifier = Modifier.weight(1f)
             )
             if (isSelected) {
-                Text("✓", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                Icon(
+                    imageVector = Icons.Rounded.Check,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(16.dp)
+                )
             }
         }
     }
@@ -206,9 +241,9 @@ fun HomeContent(
 ) {
     val listState = rememberScalingLazyListState()
     val themes = listOf(
-        Triple("⚙️", "Tecnología", "Tecnología"),
-        Triple("💼", "Negocios", "Negocios"),
-        Triple("☕", "Vida Diaria", "Vida Diaria")
+        Triple(Icons.Rounded.Memory, "Tecnología", "Tecnología"),
+        Triple(Icons.Rounded.Work, "Negocios", "Negocios"),
+        Triple(Icons.Rounded.FreeBreakfast, "Vida Diaria", "Vida Diaria")
     )
 
     Box(
@@ -222,12 +257,12 @@ fun HomeContent(
                 .fillMaxSize()
                 .padding(horizontal = 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp)
+            contentPadding = PaddingValues(top = 24.dp, bottom = 32.dp)
         ) {
             item { TopHeader(isDarkMode = isDarkMode, onToggleDarkMode = onToggleDarkMode) }
-            item { Spacer(Modifier.height(12.dp)) }
+            item { Spacer(Modifier.height(6.dp)) }
             item { TitleSection() }
-            item { Spacer(Modifier.height(16.dp)) }
+            item { Spacer(Modifier.height(8.dp)) }
 
             items(themes.size) { idx ->
                 val (icon, label, key) = themes[idx]
@@ -240,7 +275,7 @@ fun HomeContent(
                 if (idx < themes.size - 1) Spacer(Modifier.height(8.dp))
             }
 
-            item { Spacer(Modifier.height(20.dp)) }
+            item { Spacer(Modifier.height(10.dp)) }
             item {
                 SegmentedSelector(
                     label = "META DIARIA · PALABRAS",
@@ -250,7 +285,7 @@ fun HomeContent(
                 )
             }
 
-            item { Spacer(Modifier.height(20.dp)) }
+            item { Spacer(Modifier.height(10.dp)) }
             item {
                 SegmentedSelector(
                     label = "FRECUENCIA · CADA",
