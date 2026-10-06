@@ -3,14 +3,13 @@ package com.verbpulse.app.presentation
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.wear.compose.material3.MaterialTheme
-import androidx.wear.compose.material3.Text
+import com.verbpulse.app.core.designsystem.VerbPulseTheme
+import com.verbpulse.app.feature.setup.ui.HomeScreen
+import com.verbpulse.app.feature.learning.ui.FlashcardScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,12 +22,12 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun VerbPulseApp() {
-    MaterialTheme {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(text = "VerbPulse Ready!")
+    val showFlashcard = remember { mutableStateOf(false) }
+    VerbPulseTheme {
+        if (showFlashcard.value) {
+            FlashcardScreen(onBack = { showFlashcard.value = false })
+        } else {
+            HomeScreen(onStartLearning = { showFlashcard.value = true })
         }
     }
 }

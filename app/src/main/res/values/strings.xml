@@ -15,4 +15,10 @@
     <string name="home_daily_goal_label">META DIARIA · PALABRAS</string>
     <string name="home_frequency_label">FRECUENCIA · CADA</string>
     <string name="home_start_button">Empezar</string>
+
+    <!-- FlashcardScreen -->
+    <string name="flashcard_flip">Voltear</string>
+    <string name="flashcard_present_label">PRESENT</string>
+    <string name="flashcard_past_label">PAST</string>
+    <string name="flashcard_participle_label">PARTICIPLE</string>
 </resources>

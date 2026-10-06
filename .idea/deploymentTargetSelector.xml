@@ -11,6 +11,9 @@
       <SelectionState runConfigName="Square Dark - HomeScreenPreviewSquare">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
+      <SelectionState runConfigName="Round Dark - HomeScreenPreviewRound">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
     </selectionStates>
   </component>
 </project>

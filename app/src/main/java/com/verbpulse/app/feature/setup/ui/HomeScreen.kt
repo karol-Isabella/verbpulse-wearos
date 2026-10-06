@@ -46,7 +46,7 @@ import com.verbpulse.app.core.designsystem.OrangePrimary
 import com.verbpulse.app.core.designsystem.VerbPulseTheme
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(onStartLearning: () -> Unit = {}) {
     var selectedTheme by remember { mutableStateOf("Tecnología") }
     var selectedWords by remember { mutableStateOf("10") }
     var selectedFrequency by remember { mutableStateOf("1h") }
@@ -60,7 +60,8 @@ fun HomeScreen() {
         selectedFrequency = selectedFrequency,
         onFrequencyChange = { selectedFrequency = it },
         isDarkMode = isDarkMode,
-        onToggleDarkMode = { isDarkMode = !isDarkMode }
+        onToggleDarkMode = { isDarkMode = !isDarkMode },
+        onStartLearning = onStartLearning
     )
 }
 
@@ -71,29 +72,27 @@ fun TopHeader(isDarkMode: Boolean, onToggleDarkMode: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
     ) {
-        // ES chip
         Box(
             modifier = Modifier
                 .background(Color(0xFF2C2C2E), RoundedCornerShape(50.dp))
-                .padding(horizontal = 12.dp, vertical = 4.dp),
+                .padding(horizontal = 10.dp, vertical = 3.dp),
             contentAlignment = Alignment.Center
         ) {
-            Text("ES", color = Color(0xFFEBEBF5), fontSize = 11.sp, fontWeight = FontWeight.Medium)
+            Text("ES", color = Color(0xFFEBEBF5), fontSize = 10.sp, fontWeight = FontWeight.Bold)
         }
-        Spacer(Modifier.width(8.dp))
-        // Sun/Moon chip
+        Spacer(Modifier.width(6.dp))
         Box(
             modifier = Modifier
                 .background(Color(0xFF2C2C2E), RoundedCornerShape(50.dp))
-                .padding(horizontal = 12.dp, vertical = 4.dp)
+                .padding(horizontal = 10.dp, vertical = 3.dp)
                 .clickable { onToggleDarkMode() },
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = if (isDarkMode) Icons.Rounded.WbSunny else Icons.Rounded.Brightness4,
-                contentDescription = if (isDarkMode) "Switch to light mode" else "Switch to dark mode",
+                contentDescription = null,
                 tint = Color(0xFFEBEBF5),
-                modifier = Modifier.size(16.dp)
+                modifier = Modifier.size(14.dp)
             )
         }
     }
@@ -107,21 +106,21 @@ fun TitleSection() {
                 imageVector = Icons.Rounded.LocalFireDepartment,
                 contentDescription = null,
                 tint = OrangePrimary,
-                modifier = Modifier.size(14.dp)
+                modifier = Modifier.size(13.dp)
             )
-            Spacer(Modifier.width(4.dp))
+            Spacer(Modifier.width(3.dp))
             Text(
                 "Racha de 5 días",
                 color = OrangePrimary,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Normal
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Medium
             )
         }
-        Spacer(Modifier.height(4.dp))
+        Spacer(Modifier.height(2.dp))
         Text(
             "Tema de hoy",
             color = Color.White,
-            fontSize = 16.sp,
+            fontSize = 15.sp,
             fontWeight = FontWeight.Bold
         )
     }
@@ -134,13 +133,13 @@ fun ThemeButton(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val bgColor = if (isSelected) OrangePrimary else Color(0xFF2C2C2E)
-    val textColor = if (isSelected) Color.White else Color(0xFF8E8E93)
+    val bgColor = if (isSelected) OrangePrimary else Color(0xFF1C1C1E)
+    val textColor = if (isSelected) Color.White else Color.White.copy(alpha = 0.9f)
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(48.dp)
+            .height(38.dp)
             .background(bgColor, RoundedCornerShape(50.dp))
             .clickable(onClick = onClick),
         contentAlignment = Alignment.CenterStart
@@ -154,15 +153,15 @@ fun ThemeButton(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = if (isSelected) Color.White else Color(0xFF8E8E93),
-                modifier = Modifier.size(20.dp)
+                tint = Color.White,
+                modifier = Modifier.size(18.dp)
             )
-            Spacer(Modifier.width(10.dp))
+            Spacer(Modifier.width(8.dp))
             Text(
                 label,
                 color = textColor,
-                fontSize = 13.sp,
-                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                fontSize = 12.sp,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                 modifier = Modifier.weight(1f)
             )
             if (isSelected) {
@@ -170,7 +169,7 @@ fun ThemeButton(
                     imageVector = Icons.Rounded.Check,
                     contentDescription = null,
                     tint = Color.White,
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(15.dp)
                 )
             }
         }
@@ -184,21 +183,21 @@ fun SegmentedSelector(
     selected: String,
     onSelect: (String) -> Unit
 ) {
-    Column {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             label,
             color = Color(0xFF8E8E93),
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Normal,
+            fontSize = 9.sp,
+            fontWeight = FontWeight.SemiBold,
             letterSpacing = 0.5.sp
         )
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(4.dp))
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(36.dp)
-                .background(Color(0xFF2C2C2E), RoundedCornerShape(50.dp))
-                .padding(horizontal = 4.dp, vertical = 4.dp),
+                .height(32.dp)
+                .background(Color(0xFF1C1C1E), RoundedCornerShape(50.dp))
+                .padding(2.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -218,8 +217,8 @@ fun SegmentedSelector(
                     Text(
                         option,
                         color = if (isActive) Color.Black else Color(0xFF8E8E93),
-                        fontSize = 13.sp,
-                        fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal,
+                        fontSize = 12.sp,
+                        fontWeight = if (isActive) FontWeight.Bold else FontWeight.Medium,
                         textAlign = TextAlign.Center
                     )
                 }
@@ -237,7 +236,8 @@ fun HomeContent(
     selectedFrequency: String,
     onFrequencyChange: (String) -> Unit,
     isDarkMode: Boolean,
-    onToggleDarkMode: () -> Unit
+    onToggleDarkMode: () -> Unit,
+    onStartLearning: () -> Unit = {}
 ) {
     val listState = rememberScalingLazyListState()
     val themes = listOf(
@@ -249,20 +249,18 @@ fun HomeContent(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF000000))
+            .background(Color.Black)
     ) {
         ScalingLazyColumn(
             state = listState,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 12.dp),
+            modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            contentPadding = PaddingValues(top = 24.dp, bottom = 32.dp)
+            contentPadding = PaddingValues(top = 18.dp, bottom = 28.dp, start = 10.dp, end = 10.dp)
         ) {
             item { TopHeader(isDarkMode = isDarkMode, onToggleDarkMode = onToggleDarkMode) }
-            item { Spacer(Modifier.height(6.dp)) }
+            item { Spacer(Modifier.height(4.dp)) }
             item { TitleSection() }
-            item { Spacer(Modifier.height(8.dp)) }
+            item { Spacer(Modifier.height(6.dp)) }
 
             items(themes.size) { idx ->
                 val (icon, label, key) = themes[idx]
@@ -272,10 +270,10 @@ fun HomeContent(
                     isSelected = selectedTheme == key,
                     onClick = { onThemeChange(key) }
                 )
-                if (idx < themes.size - 1) Spacer(Modifier.height(8.dp))
+                if (idx < themes.size - 1) Spacer(Modifier.height(4.dp))
             }
 
-            item { Spacer(Modifier.height(10.dp)) }
+            item { Spacer(Modifier.height(8.dp)) }
             item {
                 SegmentedSelector(
                     label = "META DIARIA · PALABRAS",
@@ -285,7 +283,7 @@ fun HomeContent(
                 )
             }
 
-            item { Spacer(Modifier.height(10.dp)) }
+            item { Spacer(Modifier.height(8.dp)) }
             item {
                 SegmentedSelector(
                     label = "FRECUENCIA · CADA",
