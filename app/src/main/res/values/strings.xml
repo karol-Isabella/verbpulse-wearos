@@ -5,4 +5,14 @@
     values-round/strings.xml for round devices.
     -->
     <string name="hello_world">From the Square world,\nHello, %1$s!</string>
+
+    <!-- HomeScreen -->
+    <string name="home_streak">🔥 Racha de 5 días</string>
+    <string name="home_topic_label">Tema de hoy</string>
+    <string name="home_theme_tecnologia">Tecnología</string>
+    <string name="home_theme_negocios">Negocios</string>
+    <string name="home_theme_vida_diaria">Vida Diaria</string>
+    <string name="home_daily_goal_label">META DIARIA · PALABRAS</string>
+    <string name="home_frequency_label">FRECUENCIA · CADA</string>
+    <string name="home_start_button">Empezar</string>
 </resources>
