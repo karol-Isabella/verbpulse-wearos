@@ -15,6 +15,9 @@
     <string name="home_daily_goal_label">META DIARIA · PALABRAS</string>
     <string name="home_frequency_label">FRECUENCIA · CADA</string>
     <string name="home_start_button">Empezar</string>
+    <string name="home_start_learning">Comenzar</string>
+    <string name="home_lang_es">ES</string>
+    <string name="home_lang_en">EN</string>
 
     <!-- FlashcardScreen -->
     <string name="flashcard_flip">Voltear</string>

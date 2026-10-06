@@ -16,8 +16,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
+import androidx.wear.compose.material3.Icon
 import androidx.compose.material.icons.rounded.Brightness4
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.FreeBreakfast
@@ -34,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -42,15 +43,21 @@ import androidx.compose.ui.unit.sp
 import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
 import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
 import androidx.wear.compose.material3.Text
+import com.verbpulse.app.R
 import com.verbpulse.app.core.designsystem.OrangePrimary
 import com.verbpulse.app.core.designsystem.VerbPulseTheme
 
 @Composable
-fun HomeScreen(onStartLearning: () -> Unit = {}) {
+fun HomeScreen(
+    onStartLearning: () -> Unit = {},
+    isDarkMode: Boolean = true,
+    onThemeChange: () -> Unit = {},
+    language: String = "ES",
+    onLanguageChange: () -> Unit = {}
+) {
     var selectedTheme by remember { mutableStateOf("Tecnología") }
     var selectedWords by remember { mutableStateOf("10") }
     var selectedFrequency by remember { mutableStateOf("1h") }
-    var isDarkMode by remember { mutableStateOf(true) }
 
     HomeContent(
         selectedTheme = selectedTheme,
@@ -60,13 +67,20 @@ fun HomeScreen(onStartLearning: () -> Unit = {}) {
         selectedFrequency = selectedFrequency,
         onFrequencyChange = { selectedFrequency = it },
         isDarkMode = isDarkMode,
-        onToggleDarkMode = { isDarkMode = !isDarkMode },
+        onToggleDarkMode = onThemeChange,
+        language = language,
+        onLanguageChange = onLanguageChange,
         onStartLearning = onStartLearning
     )
 }
 
 @Composable
-fun TopHeader(isDarkMode: Boolean, onToggleDarkMode: () -> Unit) {
+fun TopHeader(
+    isDarkMode: Boolean,
+    onToggleDarkMode: () -> Unit,
+    language: String,
+    onLanguageChange: () -> Unit
+) {
     Row(
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
@@ -75,10 +89,11 @@ fun TopHeader(isDarkMode: Boolean, onToggleDarkMode: () -> Unit) {
         Box(
             modifier = Modifier
                 .background(Color(0xFF2C2C2E), RoundedCornerShape(50.dp))
-                .padding(horizontal = 10.dp, vertical = 3.dp),
+                .padding(horizontal = 10.dp, vertical = 3.dp)
+                .clickable { onLanguageChange() },
             contentAlignment = Alignment.Center
         ) {
-            Text("ES", color = Color(0xFFEBEBF5), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+            Text(language, color = Color(0xFFEBEBF5), fontSize = 10.sp, fontWeight = FontWeight.Bold)
         }
         Spacer(Modifier.width(6.dp))
         Box(
@@ -237,7 +252,9 @@ fun HomeContent(
     onFrequencyChange: (String) -> Unit,
     isDarkMode: Boolean,
     onToggleDarkMode: () -> Unit,
-    onStartLearning: () -> Unit = {}
+    language: String,
+    onLanguageChange: () -> Unit,
+    onStartLearning: () -> Unit
 ) {
     val listState = rememberScalingLazyListState()
     val themes = listOf(
@@ -255,9 +272,9 @@ fun HomeContent(
             state = listState,
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            contentPadding = PaddingValues(top = 18.dp, bottom = 28.dp, start = 10.dp, end = 10.dp)
+            contentPadding = PaddingValues(top = 2.dp, bottom = 28.dp, start = 10.dp, end = 10.dp)
         ) {
-            item { TopHeader(isDarkMode = isDarkMode, onToggleDarkMode = onToggleDarkMode) }
+            item { TopHeader(isDarkMode = isDarkMode, onToggleDarkMode = onToggleDarkMode, language = language, onLanguageChange = onLanguageChange) }
             item { Spacer(Modifier.height(4.dp)) }
             item { TitleSection() }
             item { Spacer(Modifier.height(6.dp)) }
@@ -292,6 +309,25 @@ fun HomeContent(
                     onSelect = onFrequencyChange
                 )
             }
+
+            item { Spacer(Modifier.height(6.dp)) }
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(42.dp)
+                        .background(OrangePrimary, RoundedCornerShape(50.dp))
+                        .clickable(onClick = onStartLearning),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        stringResource(R.string.home_start_learning),
+                        color = Color.Black,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
         }
     }
 }
@@ -299,11 +335,11 @@ fun HomeContent(
 @Preview(name = "Round Dark", widthDp = 227, heightDp = 227)
 @Composable
 fun HomeScreenPreviewRound() {
-    VerbPulseTheme(darkTheme = true) { HomeScreen() }
+    VerbPulseTheme(darkTheme = true) { HomeScreen(isDarkMode = true, language = "ES") }
 }
 
 @Preview(name = "Square Dark", widthDp = 220, heightDp = 220)
 @Composable
 fun HomeScreenPreviewSquare() {
-    VerbPulseTheme(darkTheme = true) { HomeScreen() }
+    VerbPulseTheme(darkTheme = true) { HomeScreen(isDarkMode = true, language = "ES") }
 }
