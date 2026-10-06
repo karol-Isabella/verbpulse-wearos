@@ -28,7 +28,13 @@ fun VerbPulseApp() {
 
     VerbPulseTheme(darkTheme = isDarkMode) {
         if (showFlashcard) {
-            FlashcardScreen(onBack = { showFlashcard = false })
+            FlashcardScreen(
+                onBack = { showFlashcard = false },
+                isDarkMode = isDarkMode,
+                language = language,
+                onThemeChange = { isDarkMode = !isDarkMode },
+                onLanguageChange = { language = if (language == "ES") "EN" else "ES" }
+            )
         } else {
             HomeScreen(
                 onStartLearning = { showFlashcard = true },

@@ -21,7 +21,8 @@
 
     <!-- FlashcardScreen -->
     <string name="flashcard_flip">Voltear</string>
+    <string name="flashcard_back">Volver</string>
     <string name="flashcard_present_label">PRESENT</string>
     <string name="flashcard_past_label">PAST</string>
-    <string name="flashcard_participle_label">PARTICIPLE</string>
+    <string name="flashcard_participle_label">PARTICIP.</string>
 </resources>
