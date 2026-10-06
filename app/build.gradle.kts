@@ -58,6 +58,7 @@ dependencies {
     implementation(libs.wear.compose.navigation)
     implementation(libs.activity.compose)
     implementation(libs.core.splashscreen)
+    implementation(libs.lifecycle.runtime.compose)
 
     // Hilt
     implementation(libs.hilt.android)

@@ -53,7 +53,8 @@ fun HomeScreen(
     isDarkMode: Boolean = true,
     onThemeChange: () -> Unit = {},
     language: String = "ES",
-    onLanguageChange: () -> Unit = {}
+    onLanguageChange: () -> Unit = {},
+    onStartQuiz: () -> Unit = {}
 ) {
     var selectedTheme by remember { mutableStateOf("Tecnología") }
     var selectedWords by remember { mutableStateOf("10") }
@@ -70,7 +71,8 @@ fun HomeScreen(
         onToggleDarkMode = onThemeChange,
         language = language,
         onLanguageChange = onLanguageChange,
-        onStartLearning = onStartLearning
+        onStartLearning = onStartLearning,
+        onStartQuiz = onStartQuiz
     )
 }
 
@@ -254,7 +256,8 @@ fun HomeContent(
     onToggleDarkMode: () -> Unit,
     language: String,
     onLanguageChange: () -> Unit,
-    onStartLearning: () -> Unit
+    onStartLearning: () -> Unit,
+    onStartQuiz: () -> Unit = {}
 ) {
     val listState = rememberScalingLazyListState()
     val themes = listOf(
@@ -323,6 +326,25 @@ fun HomeContent(
                     Text(
                         stringResource(R.string.home_start_learning),
                         color = Color.Black,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            item { Spacer(Modifier.height(4.dp)) }
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(42.dp)
+                        .background(Color(0xFF1C1C1E), RoundedCornerShape(50.dp))
+                        .clickable(onClick = onStartQuiz),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        stringResource(R.string.home_quiz_button),
+                        color = OrangePrimary,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold
                     )

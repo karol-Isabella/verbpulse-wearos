@@ -41,7 +41,8 @@ fun FlashcardScreen(
     onFlip: () -> Unit = {},
     onBack: () -> Unit = {},
     onThemeChange: () -> Unit = {},
-    onLanguageChange: () -> Unit = {}
+    onLanguageChange: () -> Unit = {},
+    onStartQuiz: () -> Unit = {}
 ) {
     // Determine card colour: darker orange in dark mode, lighter in light mode
     val cardColor = if (isDarkMode) Color(0xFFFF5216) else Color(0xFFFF8A65)

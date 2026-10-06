@@ -25,4 +25,13 @@
     <string name="flashcard_present_label">PRESENT</string>
     <string name="flashcard_past_label">PAST</string>
     <string name="flashcard_participle_label">PARTICIP.</string>
+
+    <!-- Quiz -->
+    <string name="quiz_title">Quiz</string>
+    <string name="quiz_question_template" formatted="false">What is the %s of %s?</string>
+    <string name="quiz_submit">Enviar</string>
+    <string name="quiz_next">Siguiente</string>
+    <string name="quiz_finish">Finalizar</string>
+    <string name="quiz_score_label">Puntuación</string>
+    <string name="home_quiz_button">Quiz</string>
 </resources>
