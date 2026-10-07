@@ -20,6 +20,7 @@ class UserPreferencesRepository @Inject constructor(
         private val LANGUAGE = stringPreferencesKey("language")
         private val DAILY_GOAL = intPreferencesKey("daily_goal")
         private val FREQUENCY = intPreferencesKey("frequency")
+        private val SELECTED_CATEGORY = stringPreferencesKey("selected_category")
     }
 
     val userPreferences: Flow<UserPreferences> = dataStore.data.map { preferences ->
@@ -27,7 +28,8 @@ class UserPreferencesRepository @Inject constructor(
             isDarkMode = preferences[IS_DARK_MODE] ?: false,
             language = preferences[LANGUAGE] ?: "ES",
             dailyGoal = preferences[DAILY_GOAL] ?: 5,
-            frequency = preferences[FREQUENCY] ?: 1
+            frequency = preferences[FREQUENCY] ?: 1,
+            selectedCategory = preferences[SELECTED_CATEGORY] ?: "Tecnología"
         )
     }
 
@@ -52,6 +54,12 @@ class UserPreferencesRepository @Inject constructor(
     suspend fun updateFrequency(frequency: Int) {
         dataStore.edit { preferences ->
             preferences[FREQUENCY] = frequency
+        }
+    }
+
+    suspend fun updateSelectedCategory(category: String) {
+        dataStore.edit { preferences ->
+            preferences[SELECTED_CATEGORY] = category
         }
     }
 }

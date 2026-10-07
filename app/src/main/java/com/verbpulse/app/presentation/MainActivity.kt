@@ -37,6 +37,7 @@ fun VerbPulseApp(userPreferencesRepository: UserPreferencesRepository) {
     var showQuiz by remember { mutableStateOf(false) }
     var isDarkMode by remember { mutableStateOf(true) }
     var language by remember { mutableStateOf("ES") }
+    var selectedCategory by remember { mutableStateOf("Tecnología") }
     val coroutineScope = rememberCoroutineScope()
 
     val userPreferences by userPreferencesRepository.userPreferences.collectAsStateWithLifecycle(
@@ -46,17 +47,20 @@ fun VerbPulseApp(userPreferencesRepository: UserPreferencesRepository) {
     userPreferences?.let { prefs ->
         isDarkMode = prefs.isDarkMode
         language = prefs.language
+        selectedCategory = prefs.selectedCategory
     }
 
     VerbPulseTheme(darkTheme = isDarkMode) {
         when {
             showQuiz -> {
                 QuizScreen(
+                    selectedCategory = selectedCategory,
                     onBack = { showQuiz = false }
                 )
             }
             showFlashcard -> {
                 FlashcardScreen(
+                    selectedCategory = selectedCategory,
                     onBack = { showFlashcard = false },
                     isDarkMode = isDarkMode,
                     language = language,
@@ -75,7 +79,13 @@ fun VerbPulseApp(userPreferencesRepository: UserPreferencesRepository) {
             }
             else -> {
                 HomeScreen(
-                    onStartLearning = { showFlashcard = true },
+                    onStartLearning = { category ->
+                        coroutineScope.launch {
+                            userPreferencesRepository.updateSelectedCategory(category)
+                        }
+                        selectedCategory = category
+                        showFlashcard = true
+                    },
                     isDarkMode = isDarkMode,
                     onThemeChange = {
                         coroutineScope.launch {
@@ -88,7 +98,13 @@ fun VerbPulseApp(userPreferencesRepository: UserPreferencesRepository) {
                             userPreferencesRepository.updateLanguage(if (language == "ES") "EN" else "ES")
                         }
                     },
-                    onStartQuiz = { showQuiz = true }
+                    onStartQuiz = { category ->
+                        coroutineScope.launch {
+                            userPreferencesRepository.updateSelectedCategory(category)
+                        }
+                        selectedCategory = category
+                        showQuiz = true
+                    }
                 )
             }
         }

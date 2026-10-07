@@ -6,16 +6,16 @@ import javax.inject.Singleton
 @Singleton
 class VerbsRepository @Inject constructor() {
     private val verbs = listOf(
-        IrregularVerb("build", "built", "built", "construir"),
-        IrregularVerb("buy", "bought", "bought", "comprar"),
-        IrregularVerb("come", "came", "come", "venir"),
-        IrregularVerb("do", "did", "done", "hacer"),
-        IrregularVerb("eat", "ate", "eaten", "comer"),
-        IrregularVerb("give", "gave", "given", "dar"),
-        IrregularVerb("go", "went", "gone", "ir"),
-        IrregularVerb("know", "knew", "known", "saber"),
-        IrregularVerb("make", "made", "made", "hacer"),
-        IrregularVerb("take", "took", "taken", "tomar")
+        IrregularVerb("build", "built", "built", "construir", "Tecnología"),
+        IrregularVerb("buy", "bought", "bought", "comprar", "Tecnología"),
+        IrregularVerb("come", "came", "come", "venir", "Negocios"),
+        IrregularVerb("do", "did", "done", "hacer", "Negocios"),
+        IrregularVerb("eat", "ate", "eaten", "comer", "Vida Diaria"),
+        IrregularVerb("give", "gave", "given", "dar", "Negocios"),
+        IrregularVerb("go", "went", "gone", "ir", "Negocios"),
+        IrregularVerb("know", "knew", "known", "saber", "Vida Diaria"),
+        IrregularVerb("make", "made", "made", "hacer", "Tecnología"),
+        IrregularVerb("take", "took", "taken", "tomar", "Tecnología")
     )
 
     fun getAllVerbs(): List<IrregularVerb> = verbs
@@ -35,5 +35,10 @@ class VerbsRepository @Inject constructor() {
             }
         }
         return wrongAnswers.take(count)
+    }
+
+    fun getVerbsByCategory(category: String): List<IrregularVerb> {
+        val filtered = verbs.filter { it.category == category }
+        return if (filtered.isEmpty()) verbs else filtered
     }
 }

@@ -12,7 +12,8 @@ import javax.inject.Inject
 data class FlashcardUiState(
     val currentVerb: IrregularVerb? = null,
     val currentIndex: Int = 0,
-    val isFlipped: Boolean = false
+    val isFlipped: Boolean = false,
+    val currentVerbList: List<IrregularVerb> = emptyList()
 )
 
 @HiltViewModel
@@ -21,42 +22,51 @@ class FlashcardViewModel @Inject constructor(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(FlashcardUiState())
     val uiState: StateFlow<FlashcardUiState> = _uiState
+    private var currentCategory: String = "Tecnología"
+    private var filteredVerbs: List<IrregularVerb> = emptyList()
 
     init {
         loadFirstVerb()
     }
 
     private fun loadFirstVerb() {
-        val verb = verbsRepository.getVerbAt(0)
-        _uiState.value = _uiState.value.copy(currentVerb = verb, currentIndex = 0)
+        val verb = if (filteredVerbs.isNotEmpty()) filteredVerbs[0] else verbsRepository.getVerbAt(0)
+        _uiState.value = _uiState.value.copy(
+            currentVerb = verb,
+            currentIndex = 0,
+            currentVerbList = filteredVerbs.ifEmpty { verbsRepository.getAllVerbs() }
+        )
+    }
+
+    fun loadVerbsByCategory(category: String) {
+        currentCategory = category
+        filteredVerbs = verbsRepository.getVerbsByCategory(category)
+        loadFirstVerb()
     }
 
     fun nextVerb() {
+        val verbList = if (filteredVerbs.isNotEmpty()) filteredVerbs else verbsRepository.getAllVerbs()
         val nextIndex = _uiState.value.currentIndex + 1
-        val verb = verbsRepository.getVerbAt(nextIndex)
-        if (verb != null) {
+        if (nextIndex < verbList.size) {
             _uiState.value = _uiState.value.copy(
-                currentVerb = verb,
+                currentVerb = verbList[nextIndex],
                 currentIndex = nextIndex,
                 isFlipped = false
             )
         } else {
-            // Wrap around to first verb
             loadFirstVerb()
         }
     }
 
     fun previousVerb() {
+        val verbList = if (filteredVerbs.isNotEmpty()) filteredVerbs else verbsRepository.getAllVerbs()
         val prevIndex = _uiState.value.currentIndex - 1
         if (prevIndex >= 0) {
-            val verb = verbsRepository.getVerbAt(prevIndex)
-            if (verb != null) {
-                _uiState.value = _uiState.value.copy(
-                    currentVerb = verb,
-                    currentIndex = prevIndex,
-                    isFlipped = false
-                )
-            }
+            _uiState.value = _uiState.value.copy(
+                currentVerb = verbList[prevIndex],
+                currentIndex = prevIndex,
+                isFlipped = false
+            )
         }
     }
 

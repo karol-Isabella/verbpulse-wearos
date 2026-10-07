@@ -1,0 +1,5 @@
+> Task :app:packageDebug
+> Task :app:createDebugApkListingFileRedirect
+> Task :app:assembleDebug
+BUILD SUCCESSFUL in 27s
+43 actionable tasks: 13 executed, 30 up-to-date

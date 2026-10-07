@@ -4,5 +4,6 @@ data class IrregularVerb(
     val present: String,
     val past: String,
     val participle: String,
-    val translationEs: String
+    val translationEs: String,
+    val category: String = "Tecnología"
 )

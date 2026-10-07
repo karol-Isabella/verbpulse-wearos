@@ -24,13 +24,21 @@ class QuizViewModel @Inject constructor(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(QuizUiState())
     val uiState: StateFlow<QuizUiState> = _uiState
+    private var categoryVerbs: List<IrregularVerb> = emptyList()
 
     init {
+        categoryVerbs = verbsRepository.getAllVerbs()
+        generateQuestion()
+    }
+
+    fun loadVerbsForCategory(category: String) {
+        categoryVerbs = verbsRepository.getVerbsByCategory(category)
         generateQuestion()
     }
 
     private fun generateQuestion() {
-        val verb = verbsRepository.getRandomVerb()
+        val verbs = if (categoryVerbs.isNotEmpty()) categoryVerbs else verbsRepository.getAllVerbs()
+        val verb = verbs.random()
         val correctAnswer = verb.past
         val wrongAnswers = verbsRepository.getRandomWrongAnswers(correctAnswer, 2)
         val allOptions = (listOf(correctAnswer) + wrongAnswers).shuffled()

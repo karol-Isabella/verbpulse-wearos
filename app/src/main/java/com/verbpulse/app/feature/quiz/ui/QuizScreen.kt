@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,13 +30,34 @@ import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
 import androidx.wear.compose.material3.Text
 import com.verbpulse.app.core.designsystem.OrangePrimary
 import com.verbpulse.app.core.designsystem.VerbPulseTheme
+import com.verbpulse.app.feature.learning.data.IrregularVerb
 
 @Composable
 fun QuizScreen(
     viewModel: QuizViewModel = hiltViewModel(),
+    selectedCategory: String = "Tecnología",
     onBack: () -> Unit = {}
 ) {
+    LaunchedEffect(selectedCategory) {
+        viewModel.loadVerbsForCategory(selectedCategory)
+    }
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    QuizScreenContent(
+        uiState = uiState,
+        onSelectAnswer = { viewModel.selectAnswer(it) },
+        onNext = { viewModel.nextQuestion() },
+        onBack = onBack
+    )
+}
+
+@Composable
+fun QuizScreenContent(
+    uiState: QuizUiState,
+    onSelectAnswer: (String) -> Unit,
+    onNext: () -> Unit,
+    onBack: () -> Unit = {}
+) {
     val listState = rememberScalingLazyListState()
 
     Box(
@@ -83,7 +105,7 @@ fun QuizScreen(
                         .fillMaxWidth(0.85f)
                         .height(44.dp)
                         .background(bgColor, RoundedCornerShape(50.dp))
-                        .clickable(enabled = uiState.selectedAnswer == null) { viewModel.selectAnswer(option) },
+                        .clickable(enabled = uiState.selectedAnswer == null) { onSelectAnswer(option) },
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -112,7 +134,7 @@ fun QuizScreen(
                             .background(OrangePrimary, RoundedCornerShape(50.dp))
                             .clickable {
                                 if (uiState.questionNumber < 10) {
-                                    viewModel.nextQuestion()
+                                    onNext()
                                 } else {
                                     onBack()
                                 }
@@ -136,7 +158,16 @@ fun QuizScreen(
 @Composable
 fun QuizScreenPreviewRound() {
     VerbPulseTheme(darkTheme = true) {
-        QuizScreen(onBack = {})
+        QuizScreenContent(
+            uiState = QuizUiState(
+                question = "What is the past of build?",
+                options = listOf("built", "went", "knew"),
+                currentVerb = IrregularVerb("build", "built", "built", "construir", "Tecnología")
+            ),
+            onSelectAnswer = {},
+            onNext = {},
+            onBack = {}
+        )
     }
 }
 
@@ -144,6 +175,15 @@ fun QuizScreenPreviewRound() {
 @Composable
 fun QuizScreenPreviewSquare() {
     VerbPulseTheme(darkTheme = true) {
-        QuizScreen(onBack = {})
+        QuizScreenContent(
+            uiState = QuizUiState(
+                question = "What is the past of build?",
+                options = listOf("built", "went", "knew"),
+                currentVerb = IrregularVerb("build", "built", "built", "construir", "Tecnología")
+            ),
+            onSelectAnswer = {},
+            onNext = {},
+            onBack = {}
+        )
     }
 }

@@ -16,6 +16,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,6 +27,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.wear.compose.material3.Icon
 import androidx.wear.compose.material3.Text
 import com.verbpulse.app.R
@@ -32,6 +36,38 @@ import com.verbpulse.app.core.designsystem.VerbPulseTheme
 
 @Composable
 fun FlashcardScreen(
+    viewModel: FlashcardViewModel = hiltViewModel(),
+    selectedCategory: String = "Tecnología",
+    isDarkMode: Boolean = true,
+    language: String = "ES",
+    onFlip: () -> Unit = {},
+    onBack: () -> Unit = {},
+    onThemeChange: () -> Unit = {},
+    onLanguageChange: () -> Unit = {},
+    onStartQuiz: () -> Unit = {}
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(selectedCategory) {
+        viewModel.loadVerbsByCategory(selectedCategory)
+    }
+
+    FlashcardScreenContent(
+        verb = uiState.currentVerb?.present?.replaceFirstChar { it.uppercase() } ?: "Build",
+        present = uiState.currentVerb?.present ?: "build",
+        past = uiState.currentVerb?.past ?: "built",
+        participle = uiState.currentVerb?.participle ?: "built",
+        isDarkMode = isDarkMode,
+        onFlip = { viewModel.flip() },
+        onBack = onBack,
+        onThemeChange = onThemeChange,
+        onLanguageChange = onLanguageChange,
+        onStartQuiz = onStartQuiz
+    )
+}
+
+@Composable
+fun FlashcardScreenContent(
     verb: String = "Build",
     present: String = "build",
     past: String = "built",
@@ -188,7 +224,7 @@ fun FlashcardScreen(
 @Composable
 fun FlashcardScreenPreviewRound() {
     VerbPulseTheme(darkTheme = true) {
-        FlashcardScreen()
+        FlashcardScreenContent()
     }
 }
 
@@ -196,6 +232,6 @@ fun FlashcardScreenPreviewRound() {
 @Composable
 fun FlashcardScreenPreviewSquare() {
     VerbPulseTheme(darkTheme = true) {
-        FlashcardScreen()
+        FlashcardScreenContent()
     }
 }

@@ -49,12 +49,12 @@ import com.verbpulse.app.core.designsystem.VerbPulseTheme
 
 @Composable
 fun HomeScreen(
-    onStartLearning: () -> Unit = {},
+    onStartLearning: (String) -> Unit = {},
     isDarkMode: Boolean = true,
     onThemeChange: () -> Unit = {},
     language: String = "ES",
     onLanguageChange: () -> Unit = {},
-    onStartQuiz: () -> Unit = {}
+    onStartQuiz: (String) -> Unit = {}
 ) {
     var selectedTheme by remember { mutableStateOf("Tecnología") }
     var selectedWords by remember { mutableStateOf("10") }
@@ -256,8 +256,8 @@ fun HomeContent(
     onToggleDarkMode: () -> Unit,
     language: String,
     onLanguageChange: () -> Unit,
-    onStartLearning: () -> Unit,
-    onStartQuiz: () -> Unit = {}
+    onStartLearning: (String) -> Unit,
+    onStartQuiz: (String) -> Unit = {}
 ) {
     val listState = rememberScalingLazyListState()
     val themes = listOf(
@@ -320,7 +320,7 @@ fun HomeContent(
                         .fillMaxWidth()
                         .height(42.dp)
                         .background(OrangePrimary, RoundedCornerShape(50.dp))
-                        .clickable(onClick = onStartLearning),
+                        .clickable(onClick = { onStartLearning(selectedTheme) }),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -339,7 +339,7 @@ fun HomeContent(
                         .fillMaxWidth()
                         .height(42.dp)
                         .background(Color(0xFF1C1C1E), RoundedCornerShape(50.dp))
-                        .clickable(onClick = onStartQuiz),
+                        .clickable(onClick = { onStartQuiz(selectedTheme) }),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
