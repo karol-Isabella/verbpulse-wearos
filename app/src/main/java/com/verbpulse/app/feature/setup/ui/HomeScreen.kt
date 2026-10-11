@@ -23,6 +23,7 @@ import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.FreeBreakfast
 import androidx.compose.material.icons.rounded.LocalFireDepartment
 import androidx.compose.material.icons.rounded.Memory
+import androidx.compose.material.icons.rounded.NotificationsActive
 import androidx.compose.material.icons.rounded.WbSunny
 import androidx.compose.material.icons.rounded.Work
 import androidx.compose.runtime.Composable
@@ -49,16 +50,20 @@ import com.verbpulse.app.core.designsystem.VerbPulseTheme
 
 @Composable
 fun HomeScreen(
-    onStartLearning: (String) -> Unit = {},
+    initialCategory: String = "Tecnología",
+    initialWords: String = "10",
+    initialFrequency: String = "1h",
+    onStartLearning: (category: String, words: String, frequency: String) -> Unit = { _, _, _ -> },
     isDarkMode: Boolean = true,
     onThemeChange: () -> Unit = {},
     language: String = "ES",
     onLanguageChange: () -> Unit = {},
-    onStartQuiz: (String) -> Unit = {}
+    onStartQuiz: (String) -> Unit = {},
+    onTestNotification: () -> Unit = {}
 ) {
-    var selectedTheme by remember { mutableStateOf("Tecnología") }
-    var selectedWords by remember { mutableStateOf("10") }
-    var selectedFrequency by remember { mutableStateOf("1h") }
+    var selectedTheme by remember(initialCategory) { mutableStateOf(initialCategory) }
+    var selectedWords by remember(initialWords) { mutableStateOf(initialWords) }
+    var selectedFrequency by remember(initialFrequency) { mutableStateOf(initialFrequency) }
 
     HomeContent(
         selectedTheme = selectedTheme,
@@ -71,8 +76,9 @@ fun HomeScreen(
         onToggleDarkMode = onThemeChange,
         language = language,
         onLanguageChange = onLanguageChange,
-        onStartLearning = onStartLearning,
-        onStartQuiz = onStartQuiz
+        onStartLearning = { onStartLearning(selectedTheme, selectedWords, selectedFrequency) },
+        onStartQuiz = onStartQuiz,
+        onTestNotification = onTestNotification
     )
 }
 
@@ -257,7 +263,8 @@ fun HomeContent(
     language: String,
     onLanguageChange: () -> Unit,
     onStartLearning: (String) -> Unit,
-    onStartQuiz: (String) -> Unit = {}
+    onStartQuiz: (String) -> Unit = {},
+    onTestNotification: () -> Unit = {}
 ) {
     val listState = rememberScalingLazyListState()
     val themes = listOf(
@@ -348,6 +355,37 @@ fun HomeContent(
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold
                     )
+                }
+            }
+
+            item { Spacer(Modifier.height(4.dp)) }
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(38.dp)
+                        .background(Color(0xFF2C2C2E), RoundedCornerShape(50.dp))
+                        .clickable(onClick = onTestNotification),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.NotificationsActive,
+                            contentDescription = "Test Notification",
+                            tint = OrangePrimary,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(Modifier.width(6.dp))
+                        Text(
+                            text = if (language == "ES") "Probar Recordatorio" else "Test Reminder",
+                            color = Color(0xFFEBEBF5),
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
                 }
             }
         }

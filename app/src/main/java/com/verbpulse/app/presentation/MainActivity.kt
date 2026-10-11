@@ -1,44 +1,118 @@
 package com.verbpulse.app.presentation
 
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.verbpulse.app.core.data.preferences.UserPreferencesRepository
 import com.verbpulse.app.core.designsystem.VerbPulseTheme
+import com.verbpulse.app.core.haptics.WearHapticsManager
+import com.verbpulse.app.core.notification.VerbNotificationManager
 import com.verbpulse.app.feature.learning.ui.FlashcardScreen
 import com.verbpulse.app.feature.quiz.ui.QuizScreen
+import com.verbpulse.app.feature.reminders.domain.ReminderScheduler
 import com.verbpulse.app.feature.setup.ui.HomeScreen
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
     @Inject
     lateinit var userPreferencesRepository: UserPreferencesRepository
 
+    @Inject
+    lateinit var reminderScheduler: ReminderScheduler
+
+    @Inject
+    lateinit var hapticsManager: WearHapticsManager
+
+    private var initialStartFromNotification by mutableStateOf(false)
+    private var initialNotificationCategory by mutableStateOf<String?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { VerbPulseApp(userPreferencesRepository) }
+        handleIntent(intent)
+
+        setContent {
+            VerbPulseApp(
+                userPreferencesRepository = userPreferencesRepository,
+                reminderScheduler = reminderScheduler,
+                hapticsManager = hapticsManager,
+                startFromNotification = initialStartFromNotification,
+                notificationCategory = initialNotificationCategory
+            )
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent?) {
+        if (intent == null) return
+        val fromNotification = intent.getBooleanExtra(VerbNotificationManager.EXTRA_START_LEARNING, false)
+        if (fromNotification) {
+            initialStartFromNotification = true
+            initialNotificationCategory = intent.getStringExtra(VerbNotificationManager.EXTRA_CATEGORY)
+        }
     }
 }
 
 @Composable
-fun VerbPulseApp(userPreferencesRepository: UserPreferencesRepository) {
-    var showFlashcard by remember { mutableStateOf(false) }
+fun VerbPulseApp(
+    userPreferencesRepository: UserPreferencesRepository,
+    reminderScheduler: ReminderScheduler? = null,
+    hapticsManager: WearHapticsManager? = null,
+    startFromNotification: Boolean = false,
+    notificationCategory: String? = null
+) {
+    val context = LocalContext.current
+    var showFlashcard by remember { mutableStateOf(startFromNotification) }
     var showQuiz by remember { mutableStateOf(false) }
     var isDarkMode by remember { mutableStateOf(true) }
     var language by remember { mutableStateOf("ES") }
-    var selectedCategory by remember { mutableStateOf("Tecnología") }
+    var selectedCategory by remember { mutableStateOf(notificationCategory ?: "Tecnología") }
     val coroutineScope = rememberCoroutineScope()
+
+    // Solicitar permiso de notificaciones en Wear OS 4+ (API 33+)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        val permissionLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission(),
+            onResult = { isGranted ->
+                Timber.d("Permiso POST_NOTIFICATIONS en Wear OS: %b", isGranted)
+            }
+        )
+        LaunchedEffect(Unit) {
+            if (ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+    }
 
     val userPreferences by userPreferencesRepository.userPreferences.collectAsStateWithLifecycle(
         initialValue = null
@@ -47,7 +121,9 @@ fun VerbPulseApp(userPreferencesRepository: UserPreferencesRepository) {
     userPreferences?.let { prefs ->
         isDarkMode = prefs.isDarkMode
         language = prefs.language
-        selectedCategory = prefs.selectedCategory
+        if (!startFromNotification) {
+            selectedCategory = prefs.selectedCategory
+        }
     }
 
     VerbPulseTheme(darkTheme = isDarkMode) {
@@ -55,55 +131,87 @@ fun VerbPulseApp(userPreferencesRepository: UserPreferencesRepository) {
             showQuiz -> {
                 QuizScreen(
                     selectedCategory = selectedCategory,
-                    onBack = { showQuiz = false }
+                    onBack = {
+                        hapticsManager?.playSubtleClick()
+                        showQuiz = false
+                    }
                 )
             }
             showFlashcard -> {
                 FlashcardScreen(
                     selectedCategory = selectedCategory,
-                    onBack = { showFlashcard = false },
+                    onBack = {
+                        hapticsManager?.playSubtleClick()
+                        showFlashcard = false
+                    },
                     isDarkMode = isDarkMode,
                     language = language,
                     onThemeChange = {
+                        hapticsManager?.playSubtleClick()
                         coroutineScope.launch {
                             userPreferencesRepository.updateIsDarkMode(!isDarkMode)
                         }
                     },
                     onLanguageChange = {
+                        hapticsManager?.playSubtleClick()
                         coroutineScope.launch {
                             userPreferencesRepository.updateLanguage(if (language == "ES") "EN" else "ES")
                         }
                     },
-                    onStartQuiz = { showQuiz = true }
+                    onStartQuiz = {
+                        hapticsManager?.playSubtleClick()
+                        showQuiz = true
+                    }
                 )
             }
             else -> {
                 HomeScreen(
-                    onStartLearning = { category ->
+                    initialCategory = selectedCategory,
+                    initialWords = (userPreferences?.dailyGoal ?: 10).toString(),
+                    initialFrequency = "${userPreferences?.frequency ?: 1}h",
+                    onStartLearning = { category, words, frequency ->
+                        hapticsManager?.playSubtleClick()
+                        val goal = words.toIntOrNull() ?: 10
+                        val freqHours = frequency.replace("h", "").toIntOrNull() ?: 1
+
                         coroutineScope.launch {
                             userPreferencesRepository.updateSelectedCategory(category)
+                            userPreferencesRepository.updateDailyGoal(goal)
+                            userPreferencesRepository.updateFrequency(freqHours)
                         }
+
+                        // Programar recordatorios en segundo plano con WorkManager (Fase 5)
+                        reminderScheduler?.schedulePeriodicReminders(freqHours)
+
                         selectedCategory = category
                         showFlashcard = true
                     },
                     isDarkMode = isDarkMode,
                     onThemeChange = {
+                        hapticsManager?.playSubtleClick()
                         coroutineScope.launch {
                             userPreferencesRepository.updateIsDarkMode(!isDarkMode)
                         }
                     },
                     language = language,
                     onLanguageChange = {
+                        hapticsManager?.playSubtleClick()
                         coroutineScope.launch {
                             userPreferencesRepository.updateLanguage(if (language == "ES") "EN" else "ES")
                         }
                     },
                     onStartQuiz = { category ->
+                        hapticsManager?.playSubtleClick()
                         coroutineScope.launch {
                             userPreferencesRepository.updateSelectedCategory(category)
                         }
                         selectedCategory = category
                         showQuiz = true
+                    },
+                    onTestNotification = {
+                        // Probar vibración háptica inmediata y enviar recordatorio de demostración
+                        hapticsManager?.playReminderPulse()
+                        reminderScheduler?.triggerImmediateReminder()
                     }
                 )
             }
