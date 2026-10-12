@@ -83,5 +83,8 @@ dependencies {
     implementation(libs.coroutines.android)
     implementation(libs.timber)
 
+    // Gemini AI
+    implementation(libs.generativeai)
+
     debugImplementation(libs.ui.tooling)
 }
