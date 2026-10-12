@@ -25,6 +25,8 @@ import com.verbpulse.app.core.designsystem.VerbPulseTheme
 import com.verbpulse.app.core.haptics.WearHapticsManager
 import com.verbpulse.app.core.notification.VerbNotificationManager
 import com.verbpulse.app.feature.learning.ui.FlashcardScreen
+import com.verbpulse.app.feature.progress.data.ProgressRepository
+import com.verbpulse.app.feature.progress.ui.ProgressScreen
 import com.verbpulse.app.feature.quiz.ui.QuizScreen
 import com.verbpulse.app.feature.reminders.domain.ReminderScheduler
 import com.verbpulse.app.feature.setup.ui.HomeScreen
@@ -45,6 +47,9 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var hapticsManager: WearHapticsManager
 
+    @Inject
+    lateinit var progressRepository: ProgressRepository
+
     private var initialStartFromNotification by mutableStateOf(false)
     private var initialNotificationCategory by mutableStateOf<String?>(null)
 
@@ -57,6 +62,7 @@ class MainActivity : ComponentActivity() {
                 userPreferencesRepository = userPreferencesRepository,
                 reminderScheduler = reminderScheduler,
                 hapticsManager = hapticsManager,
+                progressRepository = progressRepository,
                 startFromNotification = initialStartFromNotification,
                 notificationCategory = initialNotificationCategory
             )
@@ -84,12 +90,14 @@ fun VerbPulseApp(
     userPreferencesRepository: UserPreferencesRepository,
     reminderScheduler: ReminderScheduler? = null,
     hapticsManager: WearHapticsManager? = null,
+    progressRepository: ProgressRepository? = null,
     startFromNotification: Boolean = false,
     notificationCategory: String? = null
 ) {
     val context = LocalContext.current
     var showFlashcard by remember { mutableStateOf(startFromNotification) }
     var showQuiz by remember { mutableStateOf(false) }
+    var showProgress by remember { mutableStateOf(false) }
     var isDarkMode by remember { mutableStateOf(true) }
     var language by remember { mutableStateOf("ES") }
     var selectedCategory by remember { mutableStateOf(notificationCategory ?: "Tecnología") }
@@ -118,6 +126,9 @@ fun VerbPulseApp(
         initialValue = null
     )
 
+    val currentStreak by (progressRepository?.currentStreak ?: kotlinx.coroutines.flow.flowOf(1))
+        .collectAsStateWithLifecycle(initialValue = 1)
+
     userPreferences?.let { prefs ->
         isDarkMode = prefs.isDarkMode
         language = prefs.language
@@ -128,12 +139,27 @@ fun VerbPulseApp(
 
     VerbPulseTheme(darkTheme = isDarkMode) {
         when {
+            showProgress -> {
+                ProgressScreen(
+                    onDone = {
+                        hapticsManager?.playSubtleClick()
+                        showProgress = false
+                        showQuiz = false
+                        showFlashcard = false
+                    }
+                )
+            }
             showQuiz -> {
                 QuizScreen(
                     selectedCategory = selectedCategory,
                     onBack = {
                         hapticsManager?.playSubtleClick()
                         showQuiz = false
+                    },
+                    onFinishQuiz = {
+                        hapticsManager?.playSuccessPulse()
+                        showQuiz = false
+                        showProgress = true
                     }
                 )
             }
@@ -160,6 +186,7 @@ fun VerbPulseApp(
                     },
                     onStartQuiz = {
                         hapticsManager?.playSubtleClick()
+                        showFlashcard = false
                         showQuiz = true
                     }
                 )
@@ -169,6 +196,11 @@ fun VerbPulseApp(
                     initialCategory = selectedCategory,
                     initialWords = (userPreferences?.dailyGoal ?: 10).toString(),
                     initialFrequency = "${userPreferences?.frequency ?: 1}h",
+                    currentStreak = currentStreak,
+                    onOpenProgress = {
+                        hapticsManager?.playSubtleClick()
+                        showProgress = true
+                    },
                     onStartLearning = { category, words, frequency ->
                         hapticsManager?.playSubtleClick()
                         val goal = words.toIntOrNull() ?: 10

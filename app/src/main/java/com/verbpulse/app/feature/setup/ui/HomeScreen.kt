@@ -59,7 +59,9 @@ fun HomeScreen(
     language: String = "ES",
     onLanguageChange: () -> Unit = {},
     onStartQuiz: (String) -> Unit = {},
-    onTestNotification: () -> Unit = {}
+    onTestNotification: () -> Unit = {},
+    currentStreak: Int = 1,
+    onOpenProgress: () -> Unit = {}
 ) {
     var selectedTheme by remember(initialCategory) { mutableStateOf(initialCategory) }
     var selectedWords by remember(initialWords) { mutableStateOf(initialWords) }
@@ -78,7 +80,9 @@ fun HomeScreen(
         onLanguageChange = onLanguageChange,
         onStartLearning = { onStartLearning(selectedTheme, selectedWords, selectedFrequency) },
         onStartQuiz = onStartQuiz,
-        onTestNotification = onTestNotification
+        onTestNotification = onTestNotification,
+        currentStreak = currentStreak,
+        onOpenProgress = onOpenProgress
     )
 }
 
@@ -122,8 +126,14 @@ fun TopHeader(
 }
 
 @Composable
-fun TitleSection() {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+fun TitleSection(
+    streakDays: Int = 1,
+    onOpenProgress: () -> Unit = {}
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.clickable { onOpenProgress() }
+    ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 imageVector = Icons.Rounded.LocalFireDepartment,
@@ -133,7 +143,7 @@ fun TitleSection() {
             )
             Spacer(Modifier.width(3.dp))
             Text(
-                "Racha de 5 días",
+                if (streakDays > 0) "Racha de $streakDays días" else "Comienza tu racha",
                 color = OrangePrimary,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Medium
@@ -264,7 +274,9 @@ fun HomeContent(
     onLanguageChange: () -> Unit,
     onStartLearning: (String) -> Unit,
     onStartQuiz: (String) -> Unit = {},
-    onTestNotification: () -> Unit = {}
+    onTestNotification: () -> Unit = {},
+    currentStreak: Int = 1,
+    onOpenProgress: () -> Unit = {}
 ) {
     val listState = rememberScalingLazyListState()
     val themes = listOf(
@@ -286,7 +298,7 @@ fun HomeContent(
         ) {
             item { TopHeader(isDarkMode = isDarkMode, onToggleDarkMode = onToggleDarkMode, language = language, onLanguageChange = onLanguageChange) }
             item { Spacer(Modifier.height(4.dp)) }
-            item { TitleSection() }
+            item { TitleSection(streakDays = currentStreak, onOpenProgress = onOpenProgress) }
             item { Spacer(Modifier.height(6.dp)) }
 
             items(themes.size) { idx ->

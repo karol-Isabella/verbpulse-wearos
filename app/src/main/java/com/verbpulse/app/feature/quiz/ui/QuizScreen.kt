@@ -36,13 +36,21 @@ import com.verbpulse.app.feature.learning.data.IrregularVerb
 fun QuizScreen(
     viewModel: QuizViewModel = hiltViewModel(),
     selectedCategory: String = "Tecnología",
-    onBack: () -> Unit = {}
+    onBack: () -> Unit = {},
+    onFinishQuiz: () -> Unit = onBack
 ) {
     LaunchedEffect(selectedCategory) {
         viewModel.loadVerbsForCategory(selectedCategory)
     }
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(uiState.isFinished) {
+        if (uiState.isFinished) {
+            onFinishQuiz()
+        }
+    }
+
     QuizScreenContent(
         uiState = uiState,
         onSelectAnswer = { viewModel.selectAnswer(it) },
@@ -73,11 +81,24 @@ fun QuizScreenContent(
             contentPadding = PaddingValues(top = 10.dp, bottom = 20.dp, start = 8.dp, end = 8.dp),
             verticalArrangement = Arrangement.Center
         ) {
-            // Question text
+            // Indicador de pregunta
+            item {
+                Text(
+                    text = "PREGUNTA ${uiState.questionNumber}/${uiState.totalQuestions}",
+                    color = Color(0xFF8E8E93),
+                    fontSize = 8.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 0.8.sp
+                )
+            }
+
+            item { Spacer(Modifier.height(2.dp)) }
+
+            // Texto de la pregunta
             item {
                 Text(
                     text = uiState.question,
-                    fontSize = 14.sp,
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
                     textAlign = TextAlign.Center,
@@ -85,9 +106,9 @@ fun QuizScreenContent(
                 )
             }
 
-            item { Spacer(Modifier.height(12.dp)) }
+            item { Spacer(Modifier.height(10.dp)) }
 
-            // Answer options
+            // Opciones de respuesta
             items(uiState.options.size) { idx ->
                 val option = uiState.options[idx]
                 val isSelected = uiState.selectedAnswer == option
@@ -95,7 +116,7 @@ fun QuizScreenContent(
 
                 val bgColor = when {
                     isSelected && isCorrect -> OrangePrimary
-                    isSelected && uiState.isCorrect == false -> Color(0xFFFF0000)
+                    isSelected && uiState.isCorrect == false -> Color(0xFFFF453A)
                     isSelected -> Color(0xFFCCCCCC)
                     else -> Color(0xFF1C1C1E)
                 }
@@ -103,7 +124,7 @@ fun QuizScreenContent(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth(0.85f)
-                        .height(44.dp)
+                        .height(42.dp)
                         .background(bgColor, RoundedCornerShape(50.dp))
                         .clickable(enabled = uiState.selectedAnswer == null) { onSelectAnswer(option) },
                     contentAlignment = Alignment.Center
@@ -122,28 +143,23 @@ fun QuizScreenContent(
                 }
             }
 
-            item { Spacer(Modifier.height(12.dp)) }
+            item { Spacer(Modifier.height(10.dp)) }
 
-            // Next/Submit button
+            // Botón Siguiente / Finalizar
             item {
                 if (uiState.selectedAnswer != null) {
+                    val isLastQuestion = uiState.questionNumber >= uiState.totalQuestions
                     Box(
                         modifier = Modifier
                             .fillMaxWidth(0.85f)
-                            .height(40.dp)
+                            .height(38.dp)
                             .background(OrangePrimary, RoundedCornerShape(50.dp))
-                            .clickable {
-                                if (uiState.questionNumber < 10) {
-                                    onNext()
-                                } else {
-                                    onBack()
-                                }
-                            },
+                            .clickable { onNext() },
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = if (uiState.questionNumber < 10) "Siguiente" else "Finalizar",
-                            fontSize = 12.sp,
+                            text = if (isLastQuestion) "Finalizar y Ver Racha" else "Siguiente",
+                            fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.Black
                         )
