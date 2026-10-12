@@ -1,6 +1,7 @@
 package com.verbpulse.app.feature.reminders.data
 
 import android.content.Context
+import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
@@ -35,7 +36,7 @@ class WorkManagerReminderScheduler @Inject constructor(
         val safeHours = intervalHours.coerceIn(1, 24).toLong()
         Timber.d("Programando recordatorios periódicos de VerbPulse cada %d horas", safeHours)
 
-        val constraints = androidx.work.Constraints.Builder()
+        val constraints = Constraints.Builder()
             .setRequiresBatteryNotLow(true)
             .build()
 

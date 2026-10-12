@@ -6,6 +6,7 @@ import com.verbpulse.app.feature.learning.data.GeminiRepository
 import com.verbpulse.app.feature.learning.data.IrregularVerb
 import com.verbpulse.app.feature.learning.data.VerbsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -61,7 +62,7 @@ class FlashcardViewModel @Inject constructor(
         loadFirstVerb()
     }
 
-    private var sentenceJob: kotlinx.coroutines.Job? = null
+    private var sentenceJob: Job? = null
 
     private fun fetchDynamicSentence(verb: String, category: String) {
         sentenceJob?.cancel()

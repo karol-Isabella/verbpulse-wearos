@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import timber.log.Timber
 import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -31,7 +32,7 @@ class ProgressRepository @Inject constructor(
         }
 
         if (latestDate != null) {
-            val daysBetween = java.time.temporal.ChronoUnit.DAYS.between(latestDate, today)
+            val daysBetween = ChronoUnit.DAYS.between(latestDate, today)
             // Si el último registro fue hoy o ayer, la racha se mantiene vigente
             if (daysBetween <= 1) latest.streakDays else 0
         } else {
