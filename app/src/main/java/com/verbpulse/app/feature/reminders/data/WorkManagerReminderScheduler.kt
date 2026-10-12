@@ -35,10 +35,16 @@ class WorkManagerReminderScheduler @Inject constructor(
         val safeHours = intervalHours.coerceIn(1, 24).toLong()
         Timber.d("Programando recordatorios periódicos de VerbPulse cada %d horas", safeHours)
 
+        val constraints = androidx.work.Constraints.Builder()
+            .setRequiresBatteryNotLow(true)
+            .build()
+
         val periodicWorkRequest = PeriodicWorkRequestBuilder<VerbReminderWorker>(
             safeHours,
             TimeUnit.HOURS
-        ).build()
+        )
+            .setConstraints(constraints)
+            .build()
 
         workManager.enqueueUniquePeriodicWork(
             PERIODIC_WORK_NAME,

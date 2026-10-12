@@ -61,8 +61,11 @@ class FlashcardViewModel @Inject constructor(
         loadFirstVerb()
     }
 
+    private var sentenceJob: kotlinx.coroutines.Job? = null
+
     private fun fetchDynamicSentence(verb: String, category: String) {
-        viewModelScope.launch {
+        sentenceJob?.cancel()
+        sentenceJob = viewModelScope.launch {
             val sentence = geminiRepository.getContextualSentence(verb, category)
             _uiState.update { it.copy(contextualSentence = sentence) }
         }
