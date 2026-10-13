@@ -36,11 +36,15 @@ class FlashcardViewModel @Inject constructor(
     private var filteredVerbs: List<IrregularVerb> = emptyList()
 
     init {
+        filteredVerbs = verbsRepository.getVerbsByCategory(currentCategory)
         loadFirstVerb()
     }
 
     private fun loadFirstVerb() {
-        val verb = if (filteredVerbs.isNotEmpty()) filteredVerbs[0] else verbsRepository.getVerbAt(0)
+        if (filteredVerbs.isEmpty()) {
+            filteredVerbs = verbsRepository.getVerbsByCategory(currentCategory)
+        }
+        val verb = filteredVerbs.firstOrNull() ?: verbsRepository.getVerbAt(0)
         verb?.let {
             val fallback = geminiRepository.getStaticFallback(it.present, currentCategory)
             _uiState.update { state ->
@@ -48,7 +52,7 @@ class FlashcardViewModel @Inject constructor(
                     currentVerb = it,
                     currentIndex = 0,
                     isFlipped = false,
-                    currentVerbList = filteredVerbs.ifEmpty { verbsRepository.getAllVerbs() },
+                    currentVerbList = filteredVerbs,
                     contextualSentence = fallback
                 )
             }

@@ -91,50 +91,78 @@ class GeminiRepository @Inject constructor() {
                 cat.contains("neg") -> "They build strong client partnerships."
                 else -> "We build healthy daily habits."
             }
+            "run" -> when {
+                cat.contains("tec") -> "We run automated testing scripts."
+                cat.contains("neg") -> "They run profitable enterprises."
+                else -> "I run every morning."
+            }
+            "write" -> when {
+                cat.contains("tec") -> "Engineers write clean Kotlin code."
+                cat.contains("neg") -> "We write financial proposals."
+                else -> "I write in my journal."
+            }
+            "break" -> when {
+                cat.contains("tec") -> "Bugs break the continuous build."
+                cat.contains("neg") -> "Do not break formal contracts."
+                else -> "Take a break to rest."
+            }
+            "send" -> when {
+                cat.contains("tec") -> "Servers send encrypted payloads."
+                cat.contains("neg") -> "We send quarterly reports."
+                else -> "I send messages to family."
+            }
+            "figure out" -> when {
+                cat.contains("tec") -> "We figure out the root cause."
+                cat.contains("neg") -> "Managers figure out the budget."
+                else -> "I figure out the solution."
+            }
+            "set up" -> when {
+                cat.contains("tec") -> "We set up cloud environments."
+                cat.contains("neg") -> "We set up an executive meeting."
+                else -> "I set up my morning desk."
+            }
+            "back up" -> when {
+                cat.contains("tec") -> "Always back up server databases."
+                cat.contains("neg") -> "Auditors back up their findings."
+                else -> "I back up personal photos."
+            }
+            "log in" -> when {
+                cat.contains("tec") -> "Users log in using biometric auth."
+                cat.contains("neg") -> "Employees log in to company portals."
+                else -> "I log in to check news."
+            }
+            "roll back" -> when {
+                cat.contains("tec") -> "Engineers roll back buggy releases."
+                cat.contains("neg") -> "We roll back unfavorable terms."
+                else -> "We roll back old decisions."
+            }
+            "deal" -> "Leaders deal with complex negotiations."
+            "spend" -> "Companies spend capital on expansion."
+            "grow" -> "Strong startups grow rapidly."
+            "lead" -> "Experienced mentors lead tech teams."
+            "carry out" -> "Teams carry out corporate strategies."
+            "close down" -> "Unprofitable divisions close down."
+            "step down" -> "Founders step down as CEOs."
+            "take over" -> "Conglomerates take over smaller firms."
+            "branch out" -> "Firms branch out into new markets."
+            "wake" -> "I wake up feeling refreshed."
+            "sleep" -> "Adults sleep eight hours nightly."
+            "choose" -> "We choose healthy nutritious food."
+            "drink" -> "Always drink plenty of fresh water."
+            "run out of" -> "We run out of fresh coffee."
+            "get up" -> "I get up early every day."
+            "look for" -> "I look for my house keys."
+            "turn off" -> "Turn off lights when leaving."
+            "give up" -> "Never give up on your goals."
             "buy" -> when {
                 cat.contains("tec") -> "Companies buy secure cloud storage."
                 cat.contains("neg") -> "Investors buy profitable company shares."
                 else -> "I buy fresh fruit every morning."
             }
-            "come" -> when {
-                cat.contains("tec") -> "New updates come with safety patches."
-                cat.contains("neg") -> "Great results come from teamwork."
-                else -> "Friends come over on weekends."
-            }
-            "do" -> when {
-                cat.contains("tec") -> "Engineers do automated system testing."
-                cat.contains("neg") -> "We do business across borders."
-                else -> "I do morning exercises daily."
-            }
             "eat" -> when {
                 cat.contains("tec") -> "Developers eat snacks during hackathons."
                 cat.contains("neg") -> "Executives eat lunch during meetings."
                 else -> "We eat a healthy breakfast."
-            }
-            "give" -> when {
-                cat.contains("tec") -> "AI models give accurate code answers."
-                cat.contains("neg") -> "Leaders give clear weekly targets."
-                else -> "They give thoughtful gifts on birthdays."
-            }
-            "go" -> when {
-                cat.contains("tec") -> "Data packets go through secure tunnels."
-                cat.contains("neg") -> "Sales go up every quarter."
-                else -> "I go for a walk outside."
-            }
-            "know" -> when {
-                cat.contains("tec") -> "Engineers know Kotlin and modern APIs."
-                cat.contains("neg") -> "Top managers know market trends."
-                else -> "We know the best park route."
-            }
-            "make" -> when {
-                cat.contains("tec") -> "Pipelines make data delivery faster."
-                cat.contains("neg") -> "Partners make strategic business plans."
-                else -> "I make fresh warm coffee."
-            }
-            "take" -> when {
-                cat.contains("tec") -> "Backups take only two seconds."
-                cat.contains("neg") -> "Leaders take calculated financial risks."
-                else -> "I take deep breaths to relax."
             }
             else -> "We $v new solutions together."
         }
