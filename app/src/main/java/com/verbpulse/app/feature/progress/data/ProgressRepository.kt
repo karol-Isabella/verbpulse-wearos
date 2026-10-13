@@ -88,4 +88,41 @@ class ProgressRepository @Inject constructor(
         val todayStr = LocalDate.now().toString()
         return progressDao.getProgressByDate(todayStr)
     }
+
+    /**
+     * Registra el estudio de una palabra individual en la sesión de micro-learning activa (Room DB).
+     */
+    suspend fun recordWordLearned(category: String, count: Int = 1): DailyProgressEntity {
+        val today = LocalDate.now()
+        val todayStr = today.toString()
+        val yesterdayStr = today.minusDays(1).toString()
+
+        val latest = progressDao.getLatestProgressSync()
+        val todayProgress = progressDao.getProgressByDate(todayStr)
+
+        val currentWords = todayProgress?.wordsLearned ?: 0
+        val calculatedWords = currentWords + count
+
+        val calculatedStreak = when {
+            todayProgress != null -> todayProgress.streakDays
+            latest == null -> 1
+            latest.date == yesterdayStr -> latest.streakDays + 1
+            else -> 1
+        }
+
+        val entry = DailyProgressEntity(
+            date = todayStr,
+            category = category,
+            wordsLearned = calculatedWords,
+            totalQuestions = todayProgress?.totalQuestions ?: 0,
+            correctAnswers = todayProgress?.correctAnswers ?: 0,
+            scorePercentage = todayProgress?.scorePercentage ?: 100f,
+            streakDays = calculatedStreak,
+            timestamp = System.currentTimeMillis()
+        )
+
+        progressDao.insertOrUpdate(entry)
+        Timber.i("Palabra aprendida registrada en Room DB: %s, total hoy: %d", category, calculatedWords)
+        return entry
+    }
 }

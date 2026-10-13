@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.verbpulse.app.feature.learning.data.GeminiRepository
 import com.verbpulse.app.feature.learning.data.IrregularVerb
 import com.verbpulse.app.feature.learning.data.VerbsRepository
+import com.verbpulse.app.feature.progress.data.ProgressRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,9 +17,7 @@ import javax.inject.Inject
 
 data class FlashcardUiState(
     val currentVerb: IrregularVerb? = null,
-    val currentIndex: Int = 0,
     val isFlipped: Boolean = false,
-    val currentVerbList: List<IrregularVerb> = emptyList(),
     val contextualSentence: String = "",
     val isLoadingSentence: Boolean = false
 )
@@ -26,7 +25,8 @@ data class FlashcardUiState(
 @HiltViewModel
 class FlashcardViewModel @Inject constructor(
     private val verbsRepository: VerbsRepository,
-    private val geminiRepository: GeminiRepository
+    private val geminiRepository: GeminiRepository,
+    private val progressRepository: ProgressRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(FlashcardUiState())
@@ -44,19 +44,24 @@ class FlashcardViewModel @Inject constructor(
         if (filteredVerbs.isEmpty()) {
             filteredVerbs = verbsRepository.getVerbsByCategory(currentCategory)
         }
-        val verb = filteredVerbs.firstOrNull() ?: verbsRepository.getVerbAt(0)
+        val verb = filteredVerbs.randomOrNull() ?: verbsRepository.getVerbAt(0)
         verb?.let {
             val fallback = geminiRepository.getStaticFallback(it.present, currentCategory)
             _uiState.update { state ->
                 state.copy(
                     currentVerb = it,
-                    currentIndex = 0,
                     isFlipped = false,
-                    currentVerbList = filteredVerbs,
                     contextualSentence = fallback
                 )
             }
             fetchDynamicSentence(it.present, currentCategory)
+        }
+    }
+
+    fun onGotIt(onComplete: () -> Unit) {
+        viewModelScope.launch {
+            progressRepository.recordWordLearned(currentCategory)
+            onComplete()
         }
     }
 
@@ -73,44 +78,6 @@ class FlashcardViewModel @Inject constructor(
         sentenceJob = viewModelScope.launch {
             val sentence = geminiRepository.getContextualSentence(verb, category)
             _uiState.update { it.copy(contextualSentence = sentence) }
-        }
-    }
-
-    fun nextVerb() {
-        val verbList = if (filteredVerbs.isNotEmpty()) filteredVerbs else verbsRepository.getAllVerbs()
-        val nextIndex = _uiState.value.currentIndex + 1
-        if (nextIndex < verbList.size) {
-            val nextVerb = verbList[nextIndex]
-            val fallback = geminiRepository.getStaticFallback(nextVerb.present, currentCategory)
-            _uiState.update {
-                it.copy(
-                    currentVerb = nextVerb,
-                    currentIndex = nextIndex,
-                    isFlipped = false,
-                    contextualSentence = fallback
-                )
-            }
-            fetchDynamicSentence(nextVerb.present, currentCategory)
-        } else {
-            loadFirstVerb()
-        }
-    }
-
-    fun previousVerb() {
-        val verbList = if (filteredVerbs.isNotEmpty()) filteredVerbs else verbsRepository.getAllVerbs()
-        val prevIndex = _uiState.value.currentIndex - 1
-        if (prevIndex >= 0) {
-            val prevVerb = verbList[prevIndex]
-            val fallback = geminiRepository.getStaticFallback(prevVerb.present, currentCategory)
-            _uiState.update {
-                it.copy(
-                    currentVerb = prevVerb,
-                    currentIndex = prevIndex,
-                    isFlipped = false,
-                    contextualSentence = fallback
-                )
-            }
-            fetchDynamicSentence(prevVerb.present, currentCategory)
         }
     }
 

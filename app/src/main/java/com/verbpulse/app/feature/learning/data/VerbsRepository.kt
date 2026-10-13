@@ -50,25 +50,39 @@ class VerbsRepository @Inject constructor() {
 
     fun getRandomVerb(): IrregularVerb = verbs.random()
 
-    fun getRandomWrongAnswers(correctAnswer: String, count: Int = 2): List<String> {
+    fun getRandomWrongAnswers(correctAnswer: String, category: String = "Tecnología", count: Int = 2): List<String> {
         val wrongAnswers = mutableListOf<String>()
-        val shuffled = verbs.shuffled()
-        for (verb in shuffled) {
+        val categoryVerbs = getVerbsByCategory(category).shuffled()
+        for (verb in categoryVerbs) {
             if (wrongAnswers.size >= count) break
             if (verb.past != correctAnswer && verb.participle != correctAnswer && !wrongAnswers.contains(verb.past)) {
                 wrongAnswers.add(verb.past)
             }
         }
+        if (wrongAnswers.size < count) {
+            for (verb in verbs.shuffled()) {
+                if (wrongAnswers.size >= count) break
+                if (verb.past != correctAnswer && verb.participle != correctAnswer && !wrongAnswers.contains(verb.past)) {
+                    wrongAnswers.add(verb.past)
+                }
+            }
+        }
         return wrongAnswers.take(count)
     }
 
-    fun getRandomWrongMeanings(correctMeaning: String, count: Int = 2): List<String> {
+    fun getRandomWrongMeanings(correctMeaning: String, category: String = "Tecnología", count: Int = 2): List<String> {
         val wrongMeanings = mutableListOf<String>()
-        val candidatePool = listOf(
-            "Rendirse", "Descifrar", "Olvidar", "Organizar", "Cancelar", "Posponer",
-            "Quedarse sin", "Correr", "Salir", "Buscar", "Apagar", "Ejecutar",
-            "Invertir", "Liderar", "Comprar", "Elegir", "Dormir", "Crecer"
-        ).shuffled()
+        val candidatePool = when {
+            category.contains("tec", ignoreCase = true) -> listOf(
+                "Configurar", "Respaldar", "Iniciar sesión", "Revertir", "Ejecutar", "Compilar", "Depurar", "Romper", "Enviar"
+            )
+            category.contains("neg", ignoreCase = true) -> listOf(
+                "Llevar a cabo", "Cerrar operaciones", "Renunciar al cargo", "Asumir control", "Diversificarse", "Invertir", "Liderar", "Negociar"
+            )
+            else -> listOf(
+                "Quedarse sin", "Levantarse", "Buscar", "Apagar", "Rendirse", "Despertar", "Elegir", "Descansar"
+            )
+        }.shuffled()
 
         for (meaning in candidatePool) {
             if (wrongMeanings.size >= count) break
@@ -80,7 +94,12 @@ class VerbsRepository @Inject constructor() {
     }
 
     fun getVerbsByCategory(category: String): List<IrregularVerb> {
-        val filtered = verbs.filter { it.category.equals(category.trim(), ignoreCase = true) }
-        return if (filtered.isEmpty()) verbs.filter { it.category == "Tecnología" } else filtered
+        val targetCategory = when {
+            category.contains("tec", ignoreCase = true) -> "Tecnología"
+            category.contains("neg", ignoreCase = true) -> "Negocios"
+            category.contains("vida", ignoreCase = true) || category.contains("diaria", ignoreCase = true) || category.contains("daily", ignoreCase = true) -> "Vida Diaria"
+            else -> "Tecnología"
+        }
+        return verbs.filter { it.category == targetCategory }
     }
 }

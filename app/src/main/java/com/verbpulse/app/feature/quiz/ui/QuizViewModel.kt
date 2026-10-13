@@ -67,13 +67,13 @@ class QuizViewModel @Inject constructor(
             val verbCapitalized = verb.present.split(" ").joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } }
             question = "\"$verbCapitalized\" means…"
             correctAnswer = verb.translationEs.split(",").first().trim().replaceFirstChar { it.uppercase() }
-            val wrongAnswers = verbsRepository.getRandomWrongMeanings(correctAnswer, 2)
+            val wrongAnswers = verbsRepository.getRandomWrongMeanings(correctAnswer, currentCategory, 2)
             allOptions = (listOf(correctAnswer) + wrongAnswers).shuffled()
         } else {
             // Pregunta estilo: Past tense of "build"
             question = "Past tense of \"${verb.present}\""
             correctAnswer = verb.past.replaceFirstChar { it.uppercase() }
-            val wrongAnswers = verbsRepository.getRandomWrongAnswers(verb.past, 2)
+            val wrongAnswers = verbsRepository.getRandomWrongAnswers(verb.past, currentCategory, 2)
                 .map { it.replaceFirstChar { c -> c.uppercase() } }
             allOptions = (listOf(correctAnswer) + wrongAnswers).shuffled()
         }

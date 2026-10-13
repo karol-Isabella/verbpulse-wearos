@@ -3,11 +3,12 @@ package com.verbpulse.app.core.designsystem
 import androidx.compose.ui.graphics.Color
 import androidx.wear.compose.material3.ColorScheme
 
-// Primary Coral Orange Colors (Apple Watch Style)
-val OrangeCoral = Color(0xFFFFA07A)
-val OrangePrimary = OrangeCoral
-val OrangeLight = Color(0xFFFFB899)
-val OrangeDark = Color(0xFFE87A54)
+// Primary Flame Orange Colors (Apple Watch Style - Flame #E34A27)
+val OrangeFlame = Color(0xFFE34A27)
+val OrangePrimary = OrangeFlame
+val OrangeCoral = OrangeFlame
+val OrangeLight = Color(0xFFFF6E40)
+val OrangeDark = Color(0xFFBA2D0F)
 
 // Light Mode Colors
 val White = Color(0xFFFFFFFF)
@@ -22,10 +23,12 @@ val OnSurfaceDark = Color(0xFFFFFFFF)
 val MutedForegroundDark = Color(0xFFA1A1A6)
 
 // Semantic Colors
-val ErrorRed = Color(0xFFD11F45)
+val ErrorRed = Color(0xFFD32F2F)
 val OnErrorLight = Color(0xFFFFFFFF)
 val SuccessGreen = Color(0xFF28A745)
-val DangerRed = Color(0xFFFF5C7A)
+val RedVibrantDark = Color(0xFFFF3B30)
+val RedVibrantLight = Color(0xFFD32F2F)
+val DangerRed = RedVibrantDark
 
 // Outline Colors
 val OutlineLight = Color(0xFFE0E0E5)

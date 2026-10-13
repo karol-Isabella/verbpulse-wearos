@@ -41,6 +41,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.wear.compose.material3.Icon
 import androidx.wear.compose.material3.MaterialTheme
 import androidx.wear.compose.material3.Text
+import com.verbpulse.app.core.designsystem.OrangeFlame
 import com.verbpulse.app.core.designsystem.VerbPulseTheme
 import com.verbpulse.app.core.designsystem.WatchControls
 
@@ -71,17 +72,15 @@ fun FlashcardScreen(
         contextualSentence = uiState.contextualSentence,
         isPhrasal = uiState.currentVerb?.isPhrasal ?: false,
         isFlipped = uiState.isFlipped,
-        currentIndex = uiState.currentIndex,
-        totalVerbs = uiState.currentVerbList.size.coerceAtLeast(1),
         category = selectedCategory,
         isDarkMode = isDarkMode,
         language = language,
         onFlip = { viewModel.flip() },
-        onNext = { viewModel.nextVerb() },
-        onBack = onBack,
+        onGotIt = {
+            viewModel.onGotIt(onBack)
+        },
         onThemeChange = onThemeChange,
-        onLanguageChange = onLanguageChange,
-        onStartQuiz = onStartQuiz
+        onLanguageChange = onLanguageChange
     )
 }
 
@@ -95,17 +94,13 @@ fun FlashcardScreenContent(
     contextualSentence: String = "We build scalable cloud services.",
     isPhrasal: Boolean = false,
     isFlipped: Boolean = false,
-    currentIndex: Int = 0,
-    totalVerbs: Int = 10,
     category: String = "Tecnología",
     isDarkMode: Boolean = false,
     language: String = "ES",
     onFlip: () -> Unit = {},
-    onNext: () -> Unit = {},
-    onBack: () -> Unit = {},
+    onGotIt: () -> Unit = {},
     onThemeChange: () -> Unit = {},
-    onLanguageChange: () -> Unit = {},
-    onStartQuiz: () -> Unit = {}
+    onLanguageChange: () -> Unit = {}
 ) {
     // 3D rotation animation over the Y axis
     val rotation by animateFloatAsState(
@@ -114,11 +109,11 @@ fun FlashcardScreenContent(
         label = "flashcard_3d_flip"
     )
 
-    // Elegant coral palette
+    // Palette: Flame #E34A27 based elegant gradients
     val cardBrush = if (isPhrasal) {
         Brush.linearGradient(listOf(Color(0xFFFFDCC4), Color(0xFFE8D5FF)))
     } else {
-        Brush.linearGradient(listOf(Color(0xFFFFC9AD), Color(0xFFFF8F66)))
+        Brush.linearGradient(listOf(Color(0xFFFFC9AD), OrangeFlame))
     }
 
     val cardTextColor = if (isPhrasal) Color(0xFF3B1D4D) else Color(0xFF2E0F04)
@@ -139,243 +134,225 @@ fun FlashcardScreenContent(
             .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxSize()
+        // Badges superiores ES/EN y Modo Claro/Oscuro anclados arriba
+        WatchControls(
+            isDarkMode = isDarkMode,
+            language = language,
+            onToggleTheme = onThemeChange,
+            onToggleLanguage = onLanguageChange,
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = 8.dp)
+        )
+
+        // Tarjeta de Flashcard más angosta (fillMaxWidth(0.78f)), perfectamente centrada verticalmente
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(0.78f)
+                .height(138.dp)
+                .graphicsLayer {
+                    rotationY = rotation
+                    cameraDistance = 14f * density
+                }
+                .clip(RoundedCornerShape(22.dp))
+                .background(cardBrush)
+                .clickable { onFlip() }
+                .padding(horizontal = 10.dp, vertical = 9.dp),
+            contentAlignment = Alignment.Center
         ) {
-            Spacer(Modifier.height(4.dp))
+            if (isFront) {
+                // ====== FRENTE DE LA FLASHCARD ======
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    // Categoría única (sin contador/paginador 1/5)
+                    Text(
+                        text = category.uppercase(),
+                        color = cardLabelColor,
+                        fontSize = 8.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.6.sp
+                    )
 
-            // Header con badges ES/EN y Modo Claro/Oscuro
-            WatchControls(
-                isDarkMode = isDarkMode,
-                language = language,
-                onToggleTheme = onThemeChange,
-                onToggleLanguage = onLanguageChange
-            )
+                    // Verbo principal grande
+                    Text(
+                        text = verb,
+                        fontSize = if (isPhrasal) 20.sp else 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = cardTextColor,
+                        textAlign = TextAlign.Center,
+                        lineHeight = if (isPhrasal) 22.sp else 26.sp,
+                        modifier = Modifier.padding(horizontal = 4.dp)
+                    )
 
-            Spacer(Modifier.height(4.dp))
-
-            // Tarjeta de Flashcard más angosta, centrada y con bordes de 24dp
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth(0.84f)
-                    .height(148.dp)
-                    .graphicsLayer {
-                        rotationY = rotation
-                        cameraDistance = 14f * density
+                    // Si es Phrasal Verb muestra Verbo y Significado; si es Verbo muestra 3 formas
+                    if (isPhrasal) {
+                        Text(
+                            text = translationEs,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = cardTextColor.copy(alpha = 0.85f),
+                            textAlign = TextAlign.Center
+                        )
+                    } else {
+                        // Tres formas (Presente, Pasado, Participio)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 2.dp),
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = present,
+                                    color = cardTextColor,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = presentLabel,
+                                    color = cardLabelColor,
+                                    fontSize = 7.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = past,
+                                    color = cardTextColor,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = pastLabel,
+                                    color = cardLabelColor,
+                                    fontSize = 7.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = participle,
+                                    color = cardTextColor,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = participleLabel,
+                                    color = cardLabelColor,
+                                    fontSize = 7.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
                     }
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(cardBrush)
-                    .clickable { onFlip() }
-                    .padding(horizontal = 12.dp, vertical = 10.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                if (isFront) {
-                    // ====== FRENTE DE LA FLASHCARD ======
+
+                    // Botón / Hint sutil Voltear
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Refresh,
+                            contentDescription = flipLabel,
+                            tint = cardLabelColor,
+                            modifier = Modifier.size(11.dp)
+                        )
+                        Spacer(Modifier.width(3.dp))
+                        Text(
+                            text = flipLabel,
+                            color = cardLabelColor,
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+            } else {
+                // ====== REVERSO DE LA FLASHCARD ======
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .graphicsLayer {
+                            rotationY = 180f
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.SpaceBetween,
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        // Categoría e índice de palabra
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = category.uppercase(),
-                                color = cardLabelColor,
-                                fontSize = 8.sp,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 0.6.sp
-                            )
-                            Text(
-                                text = "${currentIndex + 1}/$totalVerbs",
-                                color = cardLabelColor,
-                                fontSize = 8.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-
-                        // Verbo principal grande
+                        // Traducción destacada
                         Text(
-                            text = verb,
-                            fontSize = if (isPhrasal) 22.sp else 26.sp,
-                            fontWeight = FontWeight.Bold,
+                            text = translationEs.replaceFirstChar { it.uppercase() },
                             color = cardTextColor,
-                            textAlign = TextAlign.Center,
-                            lineHeight = if (isPhrasal) 24.sp else 28.sp,
-                            modifier = Modifier.padding(horizontal = 4.dp)
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            textAlign = TextAlign.Center
                         )
 
-                        // Si es Phrasal Verb muestra Verbo y Significado; si es Verbo muestra 3 formas
-                        if (isPhrasal) {
-                            Text(
-                                text = translationEs,
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = cardTextColor.copy(alpha = 0.85f),
-                                textAlign = TextAlign.Center
-                            )
-                        } else {
-                            // Tres formas (Presente, Pasado, Participio)
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 2.dp),
-                                horizontalArrangement = Arrangement.SpaceEvenly,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text(
-                                        text = present,
-                                        color = cardTextColor,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Text(
-                                        text = presentLabel,
-                                        color = cardLabelColor,
-                                        fontSize = 7.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text(
-                                        text = past,
-                                        color = cardTextColor,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Text(
-                                        text = pastLabel,
-                                        color = cardLabelColor,
-                                        fontSize = 7.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text(
-                                        text = participle,
-                                        color = cardTextColor,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Text(
-                                        text = participleLabel,
-                                        color = cardLabelColor,
-                                        fontSize = 7.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                            }
-                        }
-
-                        // Botón / Hint sutil Voltear
+                        // Badge Gemini AI
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center
                         ) {
                             Icon(
-                                imageVector = Icons.Rounded.Refresh,
-                                contentDescription = flipLabel,
-                                tint = cardLabelColor,
-                                modifier = Modifier.size(11.dp)
+                                imageVector = Icons.Rounded.AutoAwesome,
+                                contentDescription = "Gemini AI",
+                                tint = cardTextColor,
+                                modifier = Modifier.size(10.dp)
                             )
                             Spacer(Modifier.width(3.dp))
                             Text(
-                                text = flipLabel,
+                                text = "GEMINI AI",
                                 color = cardLabelColor,
-                                fontSize = 9.sp,
-                                fontWeight = FontWeight.SemiBold
+                                fontSize = 7.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 0.6.sp
                             )
                         }
-                    }
-                } else {
-                    // ====== REVERSO DE LA FLASHCARD ======
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .graphicsLayer {
-                                rotationY = 180f
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            // Traducción destacada
-                            Text(
-                                text = translationEs.replaceFirstChar { it.uppercase() },
-                                color = cardTextColor,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.ExtraBold,
-                                textAlign = TextAlign.Center
-                            )
 
-                            // Badge Gemini AI
+                        // Oración contextualizada
+                        Text(
+                            text = "“$contextualSentence”",
+                            color = cardTextColor,
+                            fontSize = 10.sp,
+                            fontStyle = FontStyle.Italic,
+                            fontWeight = FontWeight.Medium,
+                            textAlign = TextAlign.Center,
+                            lineHeight = 13.sp,
+                            modifier = Modifier.padding(horizontal = 4.dp)
+                        )
+
+                        // Botón de acción: ¡Entendido! para registrar estudio y finalizar sesión activa
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(50.dp))
+                                .background(cardButtonBg)
+                                .clickable { onGotIt() }
+                                .padding(horizontal = 14.dp, vertical = 4.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.Center
                             ) {
                                 Icon(
-                                    imageVector = Icons.Rounded.AutoAwesome,
-                                    contentDescription = "Gemini AI",
-                                    tint = cardTextColor,
-                                    modifier = Modifier.size(10.dp)
+                                    imageVector = Icons.Rounded.Check,
+                                    contentDescription = gotItLabel,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(12.dp)
                                 )
-                                Spacer(Modifier.width(3.dp))
+                                Spacer(Modifier.width(4.dp))
                                 Text(
-                                    text = "GEMINI AI",
-                                    color = cardLabelColor,
-                                    fontSize = 7.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    letterSpacing = 0.6.sp
+                                    text = gotItLabel,
+                                    color = Color.White,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold
                                 )
-                            }
-
-                            // Oración contextualizada
-                            Text(
-                                text = "“$contextualSentence”",
-                                color = cardTextColor,
-                                fontSize = 10.sp,
-                                fontStyle = FontStyle.Italic,
-                                fontWeight = FontWeight.Medium,
-                                textAlign = TextAlign.Center,
-                                lineHeight = 13.sp,
-                                modifier = Modifier.padding(horizontal = 4.dp)
-                            )
-
-                            // Botón de acción: ¡Entendido! para avanzar
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(50.dp))
-                                    .background(cardButtonBg)
-                                    .clickable { onNext() }
-                                    .padding(horizontal = 14.dp, vertical = 4.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Center
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.Check,
-                                        contentDescription = gotItLabel,
-                                        tint = Color.White,
-                                        modifier = Modifier.size(12.dp)
-                                    )
-                                    Spacer(Modifier.width(4.dp))
-                                    Text(
-                                        text = gotItLabel,
-                                        color = Color.White,
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
                             }
                         }
                     }
@@ -385,7 +362,7 @@ fun FlashcardScreenContent(
     }
 }
 
-@Preview(name = "Round Light Front", widthDp = 227, heightDp = 227)
+@Preview(name = "Round Light Front Centered", widthDp = 227, heightDp = 227)
 @Composable
 fun FlashcardScreenPreviewRoundLightFront() {
     VerbPulseTheme(darkTheme = false) {
@@ -393,7 +370,7 @@ fun FlashcardScreenPreviewRoundLightFront() {
     }
 }
 
-@Preview(name = "Round Light Flipped", widthDp = 227, heightDp = 227)
+@Preview(name = "Round Light Flipped Centered", widthDp = 227, heightDp = 227)
 @Composable
 fun FlashcardScreenPreviewRoundLightFlipped() {
     VerbPulseTheme(darkTheme = false) {
@@ -401,7 +378,7 @@ fun FlashcardScreenPreviewRoundLightFlipped() {
     }
 }
 
-@Preview(name = "Round Dark Front Phrasal", widthDp = 227, heightDp = 227)
+@Preview(name = "Round Dark Front Phrasal Centered", widthDp = 227, heightDp = 227)
 @Composable
 fun FlashcardScreenPreviewRoundDarkFrontPhrasal() {
     VerbPulseTheme(darkTheme = true) {

@@ -46,7 +46,7 @@ import com.verbpulse.app.core.designsystem.MutedForegroundDark
 import com.verbpulse.app.core.designsystem.MutedForegroundLight
 import com.verbpulse.app.core.designsystem.OnSurfaceDark
 import com.verbpulse.app.core.designsystem.OnSurfaceLight
-import com.verbpulse.app.core.designsystem.OrangeCoral
+import com.verbpulse.app.core.designsystem.OrangeFlame
 import com.verbpulse.app.core.designsystem.SurfaceDark
 import com.verbpulse.app.core.designsystem.SurfaceLight
 import com.verbpulse.app.core.designsystem.VerbPulseTheme
@@ -110,13 +110,13 @@ fun TitleSection(
             Icon(
                 imageVector = Icons.Rounded.LocalFireDepartment,
                 contentDescription = null,
-                tint = OrangeCoral,
+                tint = OrangeFlame,
                 modifier = Modifier.size(13.dp)
             )
             Spacer(Modifier.width(3.dp))
             Text(
                 text = streakText,
-                color = OrangeCoral,
+                color = OrangeFlame,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.SemiBold
             )
@@ -139,7 +139,7 @@ fun ThemeButton(
     isDarkMode: Boolean,
     onClick: () -> Unit
 ) {
-    val bgColor = if (isSelected) OrangeCoral else (if (isDarkMode) SurfaceDark else SurfaceLight)
+    val bgColor = if (isSelected) OrangeFlame else (if (isDarkMode) SurfaceDark else SurfaceLight)
     val textColor = if (isSelected) Color.White else (if (isDarkMode) OnSurfaceDark else OnSurfaceLight)
     val iconColor = if (isSelected) Color.White else (if (isDarkMode) OnSurfaceDark else OnSurfaceLight)
 
@@ -348,7 +348,7 @@ fun HomeContent(
                         .fillMaxWidth(0.82f)
                         .height(38.dp)
                         .clip(RoundedCornerShape(50.dp))
-                        .background(OrangeCoral)
+                        .background(OrangeFlame)
                         .clickable(onClick = { onStartLearning(selectedTheme) }),
                     contentAlignment = Alignment.Center
                 ) {
@@ -376,7 +376,7 @@ fun HomeContent(
                 ) {
                     Text(
                         text = quizBtnText,
-                        color = OrangeCoral,
+                        color = OrangeFlame,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold
                     )
