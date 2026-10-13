@@ -41,6 +41,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
 import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
 import androidx.wear.compose.material3.Icon
+import androidx.wear.compose.material3.MaterialTheme
 import androidx.wear.compose.material3.Text
 import com.verbpulse.app.core.designsystem.OrangePrimary
 import com.verbpulse.app.core.designsystem.VerbPulseTheme
@@ -85,7 +86,7 @@ fun ProgressScreenContent(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black),
+            .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center
     ) {
         ScalingLazyColumn(
@@ -98,7 +99,7 @@ fun ProgressScreenContent(
             item {
                 Text(
                     text = "RESUMEN DEL DÍA",
-                    color = Color(0xFF8E8E93),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 9.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 0.8.sp
@@ -109,6 +110,7 @@ fun ProgressScreenContent(
 
             // Anillo gráfico circular de aciertos (RF-006)
             item {
+                val trackColor = MaterialTheme.colorScheme.secondaryContainer
                 Box(
                     modifier = Modifier.size(90.dp),
                     contentAlignment = Alignment.Center
@@ -117,7 +119,7 @@ fun ProgressScreenContent(
                         val strokeWidth = 8.dp.toPx()
                         // Pista de fondo
                         drawCircle(
-                            color = Color(0xFF2C2C2E),
+                            color = trackColor,
                             radius = (size.minDimension - strokeWidth) / 2,
                             style = Stroke(width = strokeWidth)
                         )
@@ -138,12 +140,12 @@ fun ProgressScreenContent(
                             text = "${scorePercentage.toInt()}%",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            color = MaterialTheme.colorScheme.onBackground
                         )
                         Text(
                             text = "Aciertos",
                             fontSize = 8.sp,
-                            color = Color(0xFFEBEBF5).copy(alpha = 0.6f)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -156,7 +158,7 @@ fun ProgressScreenContent(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth(0.92f)
-                        .background(Color(0xFF1C1C1E), RoundedCornerShape(20.dp))
+                        .background(MaterialTheme.colorScheme.secondaryContainer, RoundedCornerShape(20.dp))
                         .padding(vertical = 8.dp, horizontal = 12.dp)
                 ) {
                     Row(
@@ -175,7 +177,7 @@ fun ProgressScreenContent(
                             Text(
                                 text = "Racha activa",
                                 fontSize = 11.sp,
-                                color = Color.White,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 fontWeight = FontWeight.SemiBold
                             )
                         }
@@ -201,7 +203,7 @@ fun ProgressScreenContent(
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .background(Color(0xFF1C1C1E), RoundedCornerShape(18.dp))
+                            .background(MaterialTheme.colorScheme.secondaryContainer, RoundedCornerShape(18.dp))
                             .padding(vertical = 8.dp, horizontal = 6.dp),
                         contentAlignment = Alignment.Center
                     ) {
@@ -217,12 +219,12 @@ fun ProgressScreenContent(
                                 text = "$totalWords",
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 text = "Palabras",
                                 fontSize = 7.sp,
-                                color = Color(0xFF8E8E93)
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -231,7 +233,7 @@ fun ProgressScreenContent(
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .background(Color(0xFF1C1C1E), RoundedCornerShape(18.dp))
+                            .background(MaterialTheme.colorScheme.secondaryContainer, RoundedCornerShape(18.dp))
                             .padding(vertical = 8.dp, horizontal = 6.dp),
                         contentAlignment = Alignment.Center
                     ) {
@@ -247,12 +249,12 @@ fun ProgressScreenContent(
                                 text = "${averagePercentage.toInt()}%",
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 text = "Promedio",
                                 fontSize = 7.sp,
-                                color = Color(0xFF8E8E93)
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -273,7 +275,7 @@ fun ProgressScreenContent(
                 ) {
                     Text(
                         text = "Volver al Inicio",
-                        color = Color.Black,
+                        color = Color.White,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
                     )

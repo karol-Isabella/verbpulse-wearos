@@ -7,6 +7,7 @@ import com.verbpulse.app.feature.learning.data.VerbsRepository
 import com.verbpulse.app.feature.progress.data.DailyProgressEntity
 import com.verbpulse.app.feature.progress.data.ProgressRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,6 +19,7 @@ data class QuizUiState(
     val currentVerb: IrregularVerb? = null,
     val question: String = "",
     val options: List<String> = emptyList(),
+    val correctAnswer: String = "",
     val selectedAnswer: String? = null,
     val isCorrect: Boolean? = null,
     val score: Int = 0,
@@ -42,7 +44,7 @@ class QuizViewModel @Inject constructor(
     private var categoryVerbs: List<IrregularVerb> = emptyList()
 
     init {
-        categoryVerbs = verbsRepository.getAllVerbs()
+        categoryVerbs = verbsRepository.getVerbsByCategory(currentCategory)
         generateQuestion()
     }
 
@@ -55,16 +57,32 @@ class QuizViewModel @Inject constructor(
     private fun generateQuestion() {
         val verbs = if (categoryVerbs.isNotEmpty()) categoryVerbs else verbsRepository.getAllVerbs()
         val verb = verbs.random()
-        val correctAnswer = verb.past
-        val wrongAnswers = verbsRepository.getRandomWrongAnswers(correctAnswer, 2)
-        val allOptions = (listOf(correctAnswer) + wrongAnswers).shuffled()
 
-        val question = "What is the past tense of ${verb.present}?"
+        val question: String
+        val correctAnswer: String
+        val allOptions: List<String>
+
+        if (verb.isPhrasal) {
+            // Pregunta estilo: "Figure out" means...
+            val verbCapitalized = verb.present.split(" ").joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } }
+            question = "\"$verbCapitalized\" means…"
+            correctAnswer = verb.translationEs.split(",").first().trim().replaceFirstChar { it.uppercase() }
+            val wrongAnswers = verbsRepository.getRandomWrongMeanings(correctAnswer, 2)
+            allOptions = (listOf(correctAnswer) + wrongAnswers).shuffled()
+        } else {
+            // Pregunta estilo: Past tense of "build"
+            question = "Past tense of \"${verb.present}\""
+            correctAnswer = verb.past.replaceFirstChar { it.uppercase() }
+            val wrongAnswers = verbsRepository.getRandomWrongAnswers(verb.past, 2)
+                .map { it.replaceFirstChar { c -> c.uppercase() } }
+            allOptions = (listOf(correctAnswer) + wrongAnswers).shuffled()
+        }
 
         _uiState.update { state ->
             state.copy(
                 currentVerb = verb,
                 question = question,
+                correctAnswer = correctAnswer,
                 options = allOptions,
                 selectedAnswer = null,
                 isCorrect = null
@@ -73,9 +91,10 @@ class QuizViewModel @Inject constructor(
     }
 
     fun selectAnswer(answer: String) {
-        if (_uiState.value.selectedAnswer != null) return // Evitar doble respuesta
+        if (_uiState.value.selectedAnswer != null) return // Evitar selecciones múltiples
 
-        val isCorrect = answer == _uiState.value.currentVerb?.past
+        val correctAnswer = _uiState.value.correctAnswer
+        val isCorrect = answer.equals(correctAnswer, ignoreCase = true)
         val newScore = if (isCorrect) _uiState.value.score + 1 else _uiState.value.score
 
         _uiState.update {
@@ -85,17 +104,18 @@ class QuizViewModel @Inject constructor(
                 score = newScore
             )
         }
-    }
 
-    fun nextQuestion() {
-        val currentState = _uiState.value
-        if (currentState.questionNumber < currentState.totalQuestions) {
-            _uiState.update {
-                it.copy(questionNumber = it.questionNumber + 1)
+        // Delay de retroalimentación de 900ms y avance automático (estilo Apple Watch)
+        viewModelScope.launch {
+            delay(900)
+            if (_uiState.value.questionNumber < _uiState.value.totalQuestions) {
+                _uiState.update {
+                    it.copy(questionNumber = it.questionNumber + 1)
+                }
+                generateQuestion()
+            } else {
+                finishQuiz()
             }
-            generateQuestion()
-        } else {
-            finishQuiz()
         }
     }
 

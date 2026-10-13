@@ -162,6 +162,20 @@ fun VerbPulseApp(
                         hapticsManager?.playSuccessPulse()
                         showQuiz = false
                         showProgress = true
+                    },
+                    isDarkMode = isDarkMode,
+                    language = language,
+                    onThemeChange = {
+                        hapticsManager?.playSubtleClick()
+                        coroutineScope.launch {
+                            userPreferencesRepository.updateIsDarkMode(!isDarkMode)
+                        }
+                    },
+                    onLanguageChange = {
+                        hapticsManager?.playSubtleClick()
+                        coroutineScope.launch {
+                            userPreferencesRepository.updateLanguage(if (language == "ES") "EN" else "ES")
+                        }
                     }
                 )
             }
