@@ -13,7 +13,7 @@ import androidx.wear.compose.material3.Text
 
 @Composable
 fun VerbPulseTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme

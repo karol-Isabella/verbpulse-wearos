@@ -100,7 +100,7 @@ fun VerbPulseApp(
     var showFlashcard by remember { mutableStateOf(startFromNotification) }
     var showQuiz by remember { mutableStateOf(false) }
     var showProgress by remember { mutableStateOf(false) }
-    var isDarkMode by remember { mutableStateOf(true) }
+    var isDarkMode by remember { mutableStateOf(false) }
     var language by remember { mutableStateOf("ES") }
     var selectedCategory by remember { mutableStateOf(notificationCategory ?: "Tecnología") }
     val coroutineScope = rememberCoroutineScope()
