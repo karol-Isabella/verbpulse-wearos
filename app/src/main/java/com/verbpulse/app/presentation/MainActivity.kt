@@ -241,11 +241,6 @@ fun VerbPulseApp(
                         }
                         selectedCategory = category
                         showQuiz = true
-                    },
-                    onTestNotification = {
-                        // Probar vibración háptica inmediata y enviar recordatorio de demostración
-                        hapticsManager?.playReminderPulse()
-                        reminderScheduler?.triggerImmediateReminder()
                     }
                 )
             }
